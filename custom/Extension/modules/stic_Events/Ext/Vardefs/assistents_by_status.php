@@ -51,3 +51,11 @@ $dictionary['stic_Events']['fields']['stic_cs_d_minors_c'] = [
     'audited' => false,
     'importable' => 'true',
 ];
+$dictionary['stic_Events']['fields']['stic_cs_inherit_reg_c'] = [
+    'name' => 'stic_cs_inherit_reg_c',
+    'vname' => 'LBL_STIC_CS_INHERIT_REG',
+    'type' => 'bool',
+    'len' => '11',
+    'audited' => false,
+    'importable' => 'true',
+];
