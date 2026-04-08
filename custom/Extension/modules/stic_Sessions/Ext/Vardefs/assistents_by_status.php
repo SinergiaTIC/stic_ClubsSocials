@@ -1,5 +1,5 @@
 <?php
-$dictionary['Contacts']['fields']['stic_cs_h_majors_c'] = [
+$dictionary['stic_Sessions']['fields']['stic_cs_h_majors_c'] = [
     'name' => 'stic_cs_h_majors_c',
     'vname' => 'LBL_STIC_CS_H_MAJORS',
     'type' => 'int',
