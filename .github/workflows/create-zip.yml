@@ -1,17 +1,21 @@
 name: Generate Installable ZIP
 on:
   push:
-    branches: [ main ] # O master
+    branches: [ main ] # Asegúrate de que sea main o master según tu rama
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Create Zip
+        # Este comando crea el ZIP excluyendo carpetas de Git para que sea ligero
         run: zip -r stic_ClubsSocials_installable.zip . -x "*.git*" ".github*"
+
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Module-Package
           path: stic_ClubsSocials_installable.zip
