@@ -2,6 +2,8 @@
 if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 function post_install() {
+
+    // Añadir informes al módulo Kreports.
     global $db;
     
     $reportIds = [
@@ -27,4 +29,49 @@ function post_install() {
     ";
     
     $db->query($sql);
+
+    // Añadir campos al módulo Eventos
+
+    $module = 'stic_Events';
+    $file = "custom/modules/{$module}/metadata/detailviewdefs.php";
+    
+    // Si no existe en custom, miramos en el core
+    if (!file_exists($file)) {
+        $file = "modules/{$module}/metadata/detailviewdefs.php";
+    }
+
+    if (file_exists($file)) {
+        require($file);
+        $new_row = array(
+            0 => array(
+                'name' => 'stic_cs_inherit_reg_c',
+                'label' => 'LBL_STIC_CS_INHERIT_REG',
+            ),
+            1 => array(
+                'name' => 'stic_events_stic_events_1_name',
+                'label' => 'LBL_STIC_EVENTS_STIC_EVENTS_1_FROM_STIC_EVENTS_L_TITLE',
+            ),
+        );
+
+        $viewdefs[$module]['DetailView']['panels']['default'][] = $new_row;
+
+
+        $export = var_export($viewdefs, true);
+        $content = "<?php\n\$viewdefs['{$module}']['DetailView'] = " . $export . ";\n?>";
+        
+        if (!is_dir("custom/modules/{$module}/metadata")) {
+            mkdir("custom/modules/{$module}/metadata", 0755, true);
+        }
+        
+        file_put_contents("custom/modules/{$module}/metadata/detailviewdefs.php", $content);
+    }
+
+    // Forzar reparación y reconstrucción rápida.
+
+    require_once('modules/Administration/QuickRepairAndRebuild.php');
+    $repair = new RepairAndRebuild();
+    
+    $repair->repairAndRebuild(array('all'), array('all'), true, false);
+
+    echo "<h3>Reparación y reconstrucción rápida finalizada con éxito.</h3>";
 }
