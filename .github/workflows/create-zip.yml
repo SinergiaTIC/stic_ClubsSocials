@@ -1,21 +1,22 @@
-name: Generate Installable ZIP
+name: Generate Release
 on:
   push:
-    branches: [ main ] # Asegúrate de que sea main o master según tu rama
+    tags:
+      - 'v*' # Se activará cuando subas un tag que empiece por v (ej: v1.1)
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Create Zip
-        # Este comando crea el ZIP excluyendo carpetas de Git para que sea ligero
-        run: zip -r stic_ClubsSocials_installable.zip . -x "*.git*" ".github*"
+        run: zip -r stic_ClubsSocials.zip . -x "*.git*" ".github*"
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: Module-Package
-          path: stic_ClubsSocials_installable.zip
+          files: stic_ClubsSocials.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
