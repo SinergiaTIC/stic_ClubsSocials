@@ -28,26 +28,46 @@ function post_install() {
     $db->query($sql);
 
     // Añadir campos al módulo Eventos
-
     $module = 'stic_Events';
     $views = array('DetailView', 'EditView');
     
+    // Accedemos al log global para que sea visible en sugarcrm.log / sinergiacrm.log
+    $log = $GLOBALS['log'];
+    $log->error("STIC_INSTALLER: [START] Iniciando actualización de vistas para el módulo $module");
+
     foreach ($views as $view) {
         $viewLower = strtolower($view);
         $customFile = "custom/modules/{$module}/metadata/{$viewLower}defs.php";
         $coreFile = "modules/{$module}/metadata/{$viewLower}defs.php";
         
-        // Decidir qué archivo cargar (prioridad custom)
+        // Decidir qué archivo cargar (prioridad custom sobre core)
         $fileToLoad = file_exists($customFile) ? $customFile : $coreFile;
 
         if (file_exists($fileToLoad)) {
-            // Limpiamos la variable antes de cargar para evitar residuos del loop anterior
+            $log->error("STIC_INSTALLER: Cargando archivo de origen: $fileToLoad");
+            
             unset($viewdefs);
             include($fileToLoad);
 
             if (isset($viewdefs[$module][$view]['panels']['default'])) {
                 
-                // Definimos la fila con tus dos campos
+                // Evitar duplicados: comprobamos si el campo ya está en la vista
+                $alreadyExists = false;
+                foreach ($viewdefs[$module][$view]['panels']['default'] as $row) {
+                    foreach ($row as $field) {
+                        if (is_array($field) && isset($field['name']) && $field['name'] == 'stic_cs_inherit_reg_c') {
+                            $alreadyExists = true;
+                            break 2;
+                        }
+                    }
+                }
+
+                if ($alreadyExists) {
+                    $log->error("STIC_INSTALLER: Los campos ya existen en la vista $view. No se realizan cambios.");
+                    continue;
+                }
+
+                // Definimos la nueva fila con los campos solicitados
                 $new_row = array(
                     0 => array(
                         'name' => 'stic_cs_inherit_reg_c',
@@ -62,25 +82,39 @@ function post_install() {
                 // Añadimos la fila al final del panel default
                 $viewdefs[$module][$view]['panels']['default'][] = $new_row;
 
-                // Preparar el directorio custom si no existe
+                // Asegurar que el directorio de destino existe
                 $directory = "custom/modules/{$module}/metadata";
                 if (!is_dir($directory)) {
-                    mkdir($directory, 0755, true);
+                    if (mkdir($directory, 0755, true)) {
+                        $log->error("STIC_INSTALLER: Directorio creado con éxito: $directory");
+                    } else {
+                        $log->error("STIC_INSTALLER: ERROR CRÍTICO al crear el directorio: $directory");
+                    }
                 }
 
-                // Escribir el archivo final
+                // Generar el contenido del archivo PHP
+                // Exportamos solo la rama necesaria para mantener el archivo limpio
                 $content = "<?php\n\n\$viewdefs['{$module}']['{$view}'] = " . var_export($viewdefs[$module][$view], true) . ";\n";
-                file_put_contents($customFile, $content);
+                
+                if (file_put_contents($customFile, $content)) {
+                    $log->error("STIC_INSTALLER: OK - Vista $view actualizada en $customFile");
+                } else {
+                    $log->error("STIC_INSTALLER: ERROR - No se pudo escribir en $customFile (permisos?)");
+                }
+            } else {
+                $log->error("STIC_INSTALLER: ERROR - No se encontró el panel 'default' en los metadatos de $view");
             }
+        } else {
+            $log->error("STIC_INSTALLER: ERROR - No se localizó ningún archivo de metadatos (Core o Custom) para $view");
         }
     }
+    $log->error("STIC_INSTALLER: [END] Proceso finalizado.");
 
     // Forzar reparación y reconstrucción rápida.
-
     require_once('modules/Administration/QuickRepairAndRebuild.php');
-    $repair = new RepairAndRebuild();
-    
-    $repair->repairAndRebuild(array('all'), array('all'), true, false);
+    $repair = new RepairAndClear();
+    // Esto reparará solo los vardefs y el esquema del módulo en cuestión
+    $repair->repairAndClearAll(array('clearAll', 'repairDatabase'), array(translate('LBL_ALL_MODULES')), true, true);
 
     echo "<h3>Reparación y reconstrucción rápida finalizada con éxito.</h3>";
 }
