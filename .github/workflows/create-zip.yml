@@ -53,7 +53,7 @@ jobs:
 
       # 3. Empaquetar el módulo (ya con el manifest actualizado)
       - name: Create Zip
-        run: zip -r stic_ClubsSocials.zip . -x "*.git*" ".github*" "scripts*"
+        run: zip -r stic_ClubsSocials.zip . -x "*.git*" ".github*"
 
       # 4. Crear el Release en GitHub
       - name: Create Release

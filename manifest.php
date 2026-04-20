@@ -19,6 +19,6 @@ $installdefs = [
         ],
     ],
     'scripts' => [
-        'post_install' => '<basepath>/scripts/post_install.php',
+        'post_install' => '<basepath>/.scripts/post_install.php',
     ],
 ];
