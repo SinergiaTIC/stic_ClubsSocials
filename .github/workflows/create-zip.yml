@@ -1,22 +1,69 @@
-name: Generate Release
+name: Auto Version, Manifest Update and Release
+
 on:
   push:
-    tags:
-      - 'v*' # Se activará cuando subas un tag que empiece por v (ej: v1.1)
+    branches:
+      - main
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
+      # 1. Incrementar versión en el manifest.php
+      - name: Bump manifest.php version
+        id: bump_manifest
+        run: |
+          # Extraer versión actual del manifest (formato: 'version' => '1.0.5')
+          CURRENT_VERSION=$(grep -oP "'version'\s*=>\s*'\K[0-9.]+" manifest.php)
+          echo "Versión detectada: $CURRENT_VERSION"
+          
+          # Separar y sumar 1 al parche
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          NEW_PATCH=$((patch + 1))
+          NEW_VERSION="$major.$minor.$NEW_PATCH"
+          echo "Nueva versión: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          # Reemplazar en el archivo
+          sed -i "s/'version'\s*=>\s*'$CURRENT_VERSION'/'version' => '$NEW_VERSION'/g" manifest.php
+          
+          # Configurar git y hacer commit del cambio en el manifest
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add manifest.php
+          git commit -m "chore: bump manifest version to $NEW_VERSION [skip ci]"
+          git push
+
+      # 2. Crear el Tag de Git basado en la versión del manifest
+      - name: Create Git Tag
+        id: create_tag
+        run: |
+          TAG_NAME="v${{ steps.bump_manifest.outputs.new_version }}"
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      # 3. Empaquetar el módulo (ya con el manifest actualizado)
       - name: Create Zip
         run: zip -r stic_ClubsSocials.zip . -x "*.git*" ".github*"
 
+      # 4. Crear el Release en GitHub
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.create_tag.outputs.tag_name }}
+          name: Release ${{ steps.create_tag.outputs.tag_name }}
           files: stic_ClubsSocials.zip
+          body: |
+            Automatized Release: ${{ steps.create_tag.outputs.tag_name }}
+            - Manifest.php updated and module packaged.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

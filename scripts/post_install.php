@@ -3,6 +3,8 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 function post_install() {
 
+    echo "<br><span style='color: #0000FF; font-weight: bold;'>[STIC] Iniciando carga de nuevos informes...</span><br>";
+
     // Añadir informes al módulo Kreports.
     global $db;
     
@@ -27,6 +29,8 @@ function post_install() {
     
     $db->query($sql);
 
+    echo "<br><b style='color: #0000FF;'>[STIC] Proceso de carga de informes finalizado.</b><br>";
+
     // Añadir campos al módulo Eventos
     $module = 'stic_Events';
     $views = array('DetailView', 'EditView');
@@ -39,6 +43,8 @@ function post_install() {
         $customFile = "custom/modules/{$module}/metadata/{$viewLower}defs.php";
         $coreFile = "modules/{$module}/metadata/{$viewLower}defs.php";
         
+        echo "<br><span style='color: #0000FF; font-weight: bold;'>[STIC] Iniciando configuración de vistas...</span><br>";
+
         $fileToLoad = file_exists($customFile) ? $customFile : $coreFile;
 
         if (file_exists($fileToLoad)) {
@@ -105,8 +111,9 @@ function post_install() {
                     $content = "<?php\n\n\$viewdefs['{$module}']['{$view}'] = " . var_export($viewdefs[$module][$view], true) . ";\n";
                     
                     if (file_put_contents($customFile, $content)) {
-                        $log->error("STIC_INSTALLER: OK - Vista $view actualizada correctamente en el panel '$targetPanel'");
+                        echo " - Vista $view: <span style='color: green;'>¡Actualizada con éxito!</span> (Panel: $targetPanel)<br>";
                     } else {
+                        echo " - Vista $view: <span style='color: red;'>Error al escribir archivo.</span><br>";
                         $log->error("STIC_INSTALLER: ERROR - No se pudo escribir en $customFile");
                     }
                 } else {
@@ -120,8 +127,10 @@ function post_install() {
         }
     }
     $log->error("STIC_INSTALLER: [END] Proceso terminado.");
+    echo "<br><b style='color: #0000FF;'>[STIC] Proceso de vistas finalizado.</b><br>";
 
     // Forzar reparación y reconstrucción rápida.
+    echo "<p>Realizando un <b>Reparar y Reconstruir Rápido</b> para aplicar los cambios visuales y de idiomas.</p><br>";
     require_once('modules/Administration/QuickRepairAndRebuild.php');
     $repair = new RepairAndClear();
     // Esto reparará solo los vardefs y el esquema del módulo en cuestión
