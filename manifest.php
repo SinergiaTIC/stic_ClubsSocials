@@ -6,7 +6,7 @@ $manifest = [
     'is_uninstallable' => true,
     'name' => 'STIC Clubs sociales',
     'type' => 'module',
-    'version' => '0.0.6',
+    'version' => '0.0.7',
     'key' => 'stic',    
 ];
 
