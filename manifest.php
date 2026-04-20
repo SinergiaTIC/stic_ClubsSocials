@@ -10,6 +10,10 @@ $manifest = [
     'key' => 'stic',    
 ];
 
+$upgrade_manifest = [
+    'upgrade_from_version' => ['0\.0\..*'],
+];
+
 $installdefs = [
     'id' => 'stic_clubs_sociales_2024',
     'copy' => [
