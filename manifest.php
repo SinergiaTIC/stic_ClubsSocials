@@ -7,7 +7,7 @@ $manifest = [
     'name' => 'STIC Clubs sociales',
     'type' => 'module',
     'version' => '0.0.3',
-    
+    'key' => 'stic',    
 ];
 
 $installdefs = [
