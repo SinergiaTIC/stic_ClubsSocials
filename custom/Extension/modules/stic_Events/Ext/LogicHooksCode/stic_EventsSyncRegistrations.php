@@ -9,8 +9,10 @@ class stic_EventsSyncRegistrations {
 
         $log = $GLOBALS['log'];
         $log->debug("STIC_SYNC: Iniciando para Evento: " . $bean->name);
-        if (!empty($bean->stic_cs_inherit_reg_c) && !empty($bean->stic_events_stic_events_1stic_events_ida)) {
+        if (!empty($bean->stic_cs_inherit_reg_c) && !empty($bean->stic_events_stic_events_1stic_events_ida) && $bean->status === 'active') {
             $this->syncRegistrationsLogic($bean->stic_events_stic_events_1stic_events_ida, $bean->id);
+        } else {
+            $log->debug("STIC_SYNC: Sincronización omitida. Status actual: " . $bean->status);
         }
         $this->replicateToChildren($bean);
     }
@@ -21,7 +23,7 @@ class stic_EventsSyncRegistrations {
             $children_ids = $parent_bean->$rel_link_name->get();
             foreach ($children_ids as $child_id) {
                 $child = BeanFactory::getBean('stic_Events', $child_id);
-                if ($child && !empty($child->stic_cs_inherit_reg_c)) {
+                if ($child && !empty($child->stic_cs_inherit_reg_c) && $child->status === 'active') {
                     $this->syncRegistrationsLogic($parent_bean->id, $child_id);
                 }
             }

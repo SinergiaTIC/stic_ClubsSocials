@@ -1,5 +1,6 @@
 <?php
-$mod_strings['LBL_STIC_CS_H_MAJORS'] = 'Hombres mayores de edad';
-$mod_strings['LBL_STIC_CS_D_MAJORS'] = 'Mujeres mayores de edad';
-$mod_strings['LBL_STIC_CS_H_MINORS'] = 'Hombres menores de edad';
-$mod_strings['LBL_STIC_CS_D_MINORS'] = 'Mujeres menores de edad';
+$mod_strings['LBL_STIC_CS_H_MAJORS'] = 'Homes maiores de idade';
+$mod_strings['LBL_STIC_CS_D_MAJORS'] = 'Mulleres maiores de idade';
+$mod_strings['LBL_STIC_CS_H_MINORS'] = 'Homes menores de idade';
+$mod_strings['LBL_STIC_CS_D_MINORS'] = 'Mulleres menores de idade';
+$mod_strings['LBL_STIC_CS_INHERIT_REG'] = 'Herdar inscricións do evento principal';

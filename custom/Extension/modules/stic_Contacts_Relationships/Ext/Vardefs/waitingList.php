@@ -7,4 +7,5 @@ $dictionary['stic_Contacts_Relationships']['fields']['stic_cs_waiting_list_c'] =
     'duplicate_merge' => 'disabled',
     'reportable' => true,
     'importable' => 'true',
+    'source' => 'custom_fields',
 ];

@@ -20,13 +20,11 @@ class stic_Contacts_RelationshipsUnscribeFromEvents {
                 return;
             }
 
-            // 2. Cargar el Contacto para navegar por sus relaciones
             $contacto = BeanFactory::getBean('Contacts', $personaId);
             if (empty($contacto->id)) {
                 return;
             }
             
-            // Nombre de la relación N-N según el Estudio
             $relName = 'stic_registrations_contacts'; 
 
             if ($contacto->load_relationship($relName)) {
@@ -48,7 +46,7 @@ class stic_Contacts_RelationshipsUnscribeFromEvents {
                     $eventoId = $inscripcion->stic_registrations_stic_eventsstic_events_ida; 
                     $evento = BeanFactory::getBean('stic_Events', $eventoId);
 
-                    if (!$evento || empty($evento->id)) {
+                    if (!$evento || empty($evento->id) || $evento->type!='club') {
                         continue;
                     }
 

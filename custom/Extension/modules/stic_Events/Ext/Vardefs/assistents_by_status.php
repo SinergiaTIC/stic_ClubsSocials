@@ -11,6 +11,7 @@ $dictionary['stic_Events']['fields']['stic_cs_h_majors_c'] = [
     ],
     'audited' => false,
     'importable' => 'true',
+    'source' => 'custom_fields',
 ];
 $dictionary['stic_Events']['fields']['stic_cs_d_majors_c'] = [
     'name' => 'stic_cs_d_majors_c',
@@ -24,6 +25,7 @@ $dictionary['stic_Events']['fields']['stic_cs_d_majors_c'] = [
     ],
     'audited' => false,
     'importable' => 'true',
+    'source' => 'custom_fields',
 ];
 $dictionary['stic_Events']['fields']['stic_cs_h_minors_c'] = [
     'name' => 'stic_cs_h_minors_c',
@@ -37,6 +39,7 @@ $dictionary['stic_Events']['fields']['stic_cs_h_minors_c'] = [
     ],
     'audited' => false,
     'importable' => 'true',
+    'source' => 'custom_fields',
 ];
 $dictionary['stic_Events']['fields']['stic_cs_d_minors_c'] = [
     'name' => 'stic_cs_d_minors_c',
@@ -50,6 +53,7 @@ $dictionary['stic_Events']['fields']['stic_cs_d_minors_c'] = [
     ],
     'audited' => false,
     'importable' => 'true',
+    'source' => 'custom_fields',
 ];
 $dictionary['stic_Events']['fields']['stic_cs_inherit_reg_c'] = [
     'name' => 'stic_cs_inherit_reg_c',
@@ -58,4 +62,5 @@ $dictionary['stic_Events']['fields']['stic_cs_inherit_reg_c'] = [
     'len' => '11',
     'audited' => false,
     'importable' => 'true',
+    'source' => 'custom_fields',
 ];
