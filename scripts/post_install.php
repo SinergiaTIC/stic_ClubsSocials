@@ -136,7 +136,7 @@ function post_install() {
     require_once('modules/Administration/QuickRepairAndRebuild.php');
     $repair = new RepairAndClear();
     // Esto reparará solo los vardefs y el esquema del módulo en cuestión
-    $repair->repairAndClearAll(array('clearAll', 'repairDatabase'), array(translate('LBL_ALL_MODULES')), true, true);
+    $repair->repairAndClearAll(array('clearAll'), array(translate('LBL_ALL_MODULES')), true, true);
 
     echo "<h3>Reparación y reconstrucción rápida finalizada con éxito.</h3>";
 }
