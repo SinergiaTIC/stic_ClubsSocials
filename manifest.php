@@ -8,7 +8,7 @@ $manifest = [
     'published_date' => '2026-04-22 11:26:22',
     'name' => 'STIC Clubs sociales',
     'type' => 'module',
-    'version' => '0.0.9',
+    'version' => '0.0.10',
     'key' => 'stic',    
     'remove_tables' => 'prompt',
 ];
