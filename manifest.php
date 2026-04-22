@@ -2,12 +2,15 @@
 $manifest = [
     'acceptable_sugar_versions' => ['regex_matches' => array('(.*?)\\.(.*?)\\.(.*?)')],
     'author' => 'LSA',
+    'readme' => '',
     'description' => 'Añade campos, informes y valores a desplegables para la funcionalidad de Club Social',
     'is_uninstallable' => true,
+    'published_date' => '2026-04-22 11:26:22',
     'name' => 'STIC Clubs sociales',
     'type' => 'module',
     'version' => '0.0.8',
     'key' => 'stic',    
+    'remove_tables' => 'prompt',
 ];
 
 $installdefs = [
