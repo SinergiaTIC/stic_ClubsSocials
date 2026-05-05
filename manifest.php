@@ -22,6 +22,7 @@ $installdefs = [
         ],
     ],
     'scripts' => [
+        'pre_install' => '<basepath>/scripts/pre_install.php',
         'post_install' => '<basepath>/scripts/post_install.php',
     ],
 ];

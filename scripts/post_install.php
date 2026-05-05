@@ -133,10 +133,19 @@ function post_install() {
 
     // Forzar reparación y reconstrucción rápida.
     echo "<p>Realizando un <b>Reparar y Reconstruir Rápido</b> para aplicar los cambios visuales y de idiomas.</p><br>";
+    // require_once('modules/Administration/QuickRepairAndRebuild.php');
+    // $repair = new RepairAndClear();
+    // // Esto reparará solo los vardefs y el esquema del módulo en cuestión
+    // $repair->repairAndClearAll(array('clearAll'), array(translate('LBL_ALL_MODULES')), true, true);
+
+    // echo "<h3>Reparación y reconstrucción rápida finalizada con éxito.</h3>";
+    echo "<p>Limpiando caché de extensiones...</p>";
     require_once('modules/Administration/QuickRepairAndRebuild.php');
     $repair = new RepairAndClear();
-    // Esto reparará solo los vardefs y el esquema del módulo en cuestión
-    $repair->repairAndClearAll(array('clearAll'), array(translate('LBL_ALL_MODULES')), true, true);
+    $module_list = array('Contacts', 'stic_Events'); // Los módulos que tocas
 
-    echo "<h3>Reparación y reconstrucción rápida finalizada con éxito.</h3>";
+    // Solo limpiamos cachés, NO ejecutamos el SQL automáticamente aquí para evitar el crash
+    $repair->repairAndClearAll(array('clearVardefs', 'clearMetadataCache'), $module_list, true, false);
+
+    echo "<h3>Configuración finalizada. Por favor, revisa si hay cambios pendientes en Reparación Rápida.</h3>";
 }
