@@ -5,7 +5,7 @@ $manifest = [
     'readme' => '',
     'description' => 'Añade campos, informes y valores a desplegables para la funcionalidad de Club Social',
     'is_uninstallable' => true,
-    'published_date' => '2026-04-22 11:26:22',
+    'published_date' => '2026-05-05 16:06:22',
     'name' => 'STIC Clubs sociales',
     'type' => 'module',
     'version' => '0.0.10',
@@ -22,7 +22,6 @@ $installdefs = [
         ],
     ],
     'scripts' => [
-        'pre_install' => '<basepath>/scripts/pre_install.php',
         'post_install' => '<basepath>/scripts/post_install.php',
     ],
 ];

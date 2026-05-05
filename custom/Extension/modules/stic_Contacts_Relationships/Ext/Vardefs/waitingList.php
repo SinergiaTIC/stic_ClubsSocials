@@ -9,3 +9,13 @@ $dictionary['stic_Contacts_Relationships']['fields']['stic_cs_waiting_list_c'] =
     'importable' => 'true',
     'source' => 'custom_fields',
 ];
+$dictionary['stic_Contacts_Relationships']['fields']['stic_cs_test_c'] = [
+    'name' => 'stic_cs_test_c',
+    'vname' => 'LBL_STIC_CS_TEST',
+    'type' => 'bool',
+    'audited' => false,
+    'duplicate_merge' => 'disabled',
+    'reportable' => true,
+    'importable' => 'true',
+    'source' => 'custom_fields',
+];
