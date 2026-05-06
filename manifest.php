@@ -3,6 +3,7 @@ $manifest = [
     'acceptable_sugar_versions' => ['regex_matches' => array('(.*?)\\.(.*?)\\.(.*?)')],
     'author' => 'LSA',
     'readme' => '',
+    'license' => 'LICENSE',
     'description' => 'Añade campos, informes y valores a desplegables para la funcionalidad de Club Social',
     'is_uninstallable' => true,
     'published_date' => '2026-05-06 05:57:58',
