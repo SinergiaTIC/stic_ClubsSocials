@@ -4,3 +4,4 @@ $mod_strings['LBL_STIC_CS_D_MAJORS'] = 'Dones majors d\'edat';
 $mod_strings['LBL_STIC_CS_H_MINORS'] = 'Homes menors d\'edat';
 $mod_strings['LBL_STIC_CS_D_MINORS'] = 'Dones menors d\'edat';
 $mod_strings['LBL_STIC_CS_INHERIT_REG'] = 'Heretar inscripcions de l\'esdeveniment principal';
+$mod_strings['LBL_STIC_CS_TESTFIELD'] = 'Camp de prova';

@@ -133,19 +133,36 @@ function post_install() {
 
     // Forzar reparación y reconstrucción rápida.
     echo "<p>Realizando un <b>Reparar y Reconstruir Rápido</b> para aplicar los cambios visuales y de idiomas.</p><br>";
-    // require_once('modules/Administration/QuickRepairAndRebuild.php');
-    // $repair = new RepairAndClear();
-    // // Esto reparará solo los vardefs y el esquema del módulo en cuestión
-    // $repair->repairAndClearAll(array('clearAll'), array(translate('LBL_ALL_MODULES')), true, true);
 
-    // echo "<h3>Reparación y reconstrucción rápida finalizada con éxito.</h3>";
-    echo "<p>Limpiando caché de extensiones...</p>";
+    echo "<p>Reconstruyendo etiquetas de idioma...</p>";
+
+    // 1. Reconstruir las extensiones de lenguaje para que el CRM "vea" tus nuevos archivos
+    require_once('ModuleInstall/ModuleInstaller.php');
+    $mi = new ModuleInstaller();
+    $mi->rebuild_extensions(); // Esto busca nuevos archivos en Extension/
+    
+    // 2. Limpiar la caché específica de idiomas
+    if(file_exists('cache/jsLanguage')) {
+        rmdir_recursive('cache/jsLanguage'); 
+    }
+    
+    // 3. Ejecutar la reparación pero enfocada en lenguajes y vardefs
     require_once('modules/Administration/QuickRepairAndRebuild.php');
     $repair = new RepairAndClear();
-    $module_list = array('Contacts', 'stic_Events'); // Los módulos que tocas
+    $repair->repairAndClearAll(
+        array('clearVardefs', 'clearLanguageCache', 'clearTpls'), 
+        array('Contacts', 'stic_Events'), 
+        true, // auto-execute SQL
+        false // no mostrar salida HTML pesada
+    );
 
-    // Solo limpiamos cachés, NO ejecutamos el SQL automáticamente aquí para evitar el crash
-    $repair->repairAndClearAll(array('clearVardefs', 'clearMetadataCache'), $module_list, true, false);
+    // echo "<p>Limpiando caché de extensiones...</p>";
+    // require_once('modules/Administration/QuickRepairAndRebuild.php');
+    // $repair = new RepairAndClear();
+    // $module_list = array('Contacts', 'stic_Events'); // Los módulos que tocas
+
+    // // Solo limpiamos cachés, NO ejecutamos el SQL automáticamente aquí para evitar el crash
+    // $repair->repairAndClearAll(array('clearVardefs', 'clearMetadataCache'), $module_list, true, false);
 
     echo "<h3>Configuración finalizada. Por favor, revisa si hay cambios pendientes en Reparación Rápida.</h3>";
 }

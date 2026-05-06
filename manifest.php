@@ -5,10 +5,10 @@ $manifest = [
     'readme' => '',
     'description' => 'Añade campos, informes y valores a desplegables para la funcionalidad de Club Social',
     'is_uninstallable' => true,
-    'published_date' => '2026-05-05 16:06:22',
+    'published_date' => '2026-05-06 07:13:22',
     'name' => 'STIC Clubs sociales',
     'type' => 'module',
-    'version' => '0.0.12',
+    'version' => '0000000014',
     'key' => 'stic',    
     'remove_tables' => 'prompt',
 ];
