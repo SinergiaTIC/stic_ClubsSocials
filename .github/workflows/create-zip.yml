@@ -1,4 +1,4 @@
-name: Auto Version, Manifest Update and Release
+name: Auto Version (Int), Manifest Update and Release
 
 on:
   push:
@@ -17,32 +17,34 @@ jobs:
           fetch-depth: '0'
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 1. Incrementar versión en el manifest.php
-      - name: Bump manifest.php version
+      # 1. Generar versión entera y actualizar manifest.php
+      - name: Bump manifest.php version and date
         id: bump_manifest
         run: |
-          # Extraer versión actual del manifest (formato: 'version' => '1.0.5')
-          CURRENT_VERSION=$(grep -oP "'version'\s*=>\s*'\K[0-9.]+" manifest.php)
-          echo "Versión detectada: $CURRENT_VERSION"
+          # 1. Generar nueva versión (Entero basado en Timestamp)
+          # Esto garantiza un número de 10 cifras que siempre crece
+          NEW_VERSION=$(date +%s)
           
-          # Separar y sumar 1 al parche
-          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
-          NEW_PATCH=$((patch + 1))
-          NEW_VERSION="$major.$minor.$NEW_PATCH"
-          echo "Nueva versión: $NEW_VERSION"
+          # 2. Generar nueva fecha de publicación (YYYY-MM-DD HH:MM:SS)
+          NEW_DATE=$(date +"%Y-%m-%d %H:%M:%S")
+          
+          echo "Nueva versión (Int): $NEW_VERSION"
+          echo "Nueva fecha: $NEW_DATE"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-          # Reemplazar en el archivo
-          sed -i "s/'version'\s*=>\s*'$CURRENT_VERSION'/'version' => '$NEW_VERSION'/g" manifest.php
+          # 3. Reemplazar versión y fecha en el manifest.php usando regex
+          # Buscamos la clave 'version' y la clave 'published_date'
+          sed -i "s/'version'\s*=>\s*'[0-9.]*'/'version' => '$NEW_VERSION'/g" manifest.php
+          sed -i "s/'published_date'\s*=>\s*'[^']*'/'published_date' => '$NEW_DATE'/g" manifest.php
           
-          # Configurar git y hacer commit del cambio en el manifest
+          # 4. Configurar git y hacer commit de los cambios
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add manifest.php
-          git commit -m "chore: bump manifest version to $NEW_VERSION [skip ci]"
+          git commit -m "chore: bump manifest version to $NEW_VERSION and date [skip ci]"
           git push
 
-      # 2. Crear el Tag de Git basado en la versión del manifest
+      # 2. Crear el Tag de Git
       - name: Create Git Tag
         id: create_tag
         run: |
@@ -51,7 +53,7 @@ jobs:
           git push origin $TAG_NAME
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
 
-      # 3. Empaquetar el módulo (ya con el manifest actualizado)
+      # 3. Empaquetar el módulo
       - name: Create Zip
         run: zip -r stic_ClubsSocials.zip . -x "*.git*" ".github*"
 
@@ -64,6 +66,7 @@ jobs:
           files: stic_ClubsSocials.zip
           body: |
             Automatized Release: ${{ steps.create_tag.outputs.tag_name }}
-            - Manifest.php updated and module packaged.
+            - Version updated to integer: ${{ steps.bump_manifest.outputs.new_version }}
+            - Published date updated to: ${{ steps.bump_manifest.outputs.new_date }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
