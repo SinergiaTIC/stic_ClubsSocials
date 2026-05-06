@@ -6,10 +6,10 @@ $manifest = [
     'license' => 'LICENSE',
     'description' => 'Añade campos, informes y valores a desplegables para la funcionalidad de Club Social',
     'is_uninstallable' => true,
-    'published_date' => '2026-05-06 05:57:58',
+    'published_date' => '2026-05-06 06:06:28',
     'name' => 'STIC Clubs sociales',
     'type' => 'module',
-    'version' => '1778047078',
+    'version' => '1778047588',
     'key' => 'stic',    
     'remove_tables' => 'prompt',
 ];
