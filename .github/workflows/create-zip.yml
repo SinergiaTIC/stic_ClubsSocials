@@ -21,53 +21,62 @@ jobs:
       - name: Bump manifest.php version and date
         id: bump_manifest
         run: |
-          # --- LÓGICA PARA EL MANIFEST (SinergiaCRM) ---
+          # 1. Configurar Identidad
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # 2. LÓGICA DE VERSIONES
           NEW_INT_VERSION=$(date +%s)
           NEW_DATE=$(date +"%Y-%m-%d %H:%M:%S")
           
-          # --- LÓGICA PARA GITHUB (SemVer Dinámico) ---
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          VERSION_ONLY=${LAST_TAG#v}
-          IFS='.' read -r major minor patch <<< "$VERSION_ONLY"
+          # Obtener el último tag
+          RAW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "DEBUG: Tag crudo detectado en Git: $RAW_TAG"
           
-          # Obtener el mensaje del último commit
+          # Limpiar caracteres no numéricos (v0.0.1 -> 0.0.1)
+          VERSION_ONLY=$(echo $RAW_TAG | sed 's/[^0-9.]//g')
+          echo "DEBUG: Versión limpia (solo números): $VERSION_ONLY"
+          
+          # Asegurar que tenemos 3 partes (major.minor.patch)
+          if [[ $VERSION_ONLY != *.*.* ]]; then 
+            echo "DEBUG: Formato no reconocido, reseteando a 0.0.0"
+            VERSION_ONLY="0.0.0"
+          fi
+          
+          IFS='.' read -r major minor patch <<< "$VERSION_ONLY"
+          echo "DEBUG: Desglose -> Major: $major, Minor: $minor, Patch: $patch"
+          
           COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "DEBUG: Mensaje del último commit: $COMMIT_MSG"
           
           if [[ "$COMMIT_MSG" == *"[major]"* ]]; then
-            NEW_MAJOR=$((major + 1))
-            NEW_MINOR=0
-            NEW_PATCH=0
-            echo "Incremento detectado: MAJOR"
+            NEW_MAJOR=$((major + 1)); NEW_MINOR=0; NEW_PATCH=0
+            echo "RESULTADO: Incremento MAJOR detectado."
           elif [[ "$COMMIT_MSG" == *"[minor]"* ]]; then
-            NEW_MAJOR=$major
-            NEW_MINOR=$((minor + 1))
-            NEW_PATCH=0
-            echo "Incremento detectado: MINOR"
+            NEW_MAJOR=$major; NEW_MINOR=$((minor + 1)); NEW_PATCH=0
+            echo "RESULTADO: Incremento MINOR detectado."
           else
-            NEW_MAJOR=$major
-            NEW_MINOR=$minor
-            NEW_PATCH=$((patch + 1))
-            echo "Incremento detectado: PATCH (por defecto)"
+            NEW_MAJOR=$major; NEW_MINOR=$minor; NEW_PATCH=$((patch + 1))
+            echo "RESULTADO: Incremento PATCH detectado por defecto."
           fi
           
           GIT_SEMVER="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
-          
-          echo "Sinergia Version: $NEW_INT_VERSION"
-          echo "GitHub Release: $GIT_SEMVER"
+          echo "DEBUG: Próximo Tag SemVer: v$GIT_SEMVER"
+          echo "DEBUG: Próximo ID Sinergia (Unix): $NEW_INT_VERSION"
+
+          # Guardar outputs para pasos posteriores
           echo "int_version=$NEW_INT_VERSION" >> $GITHUB_OUTPUT
           echo "semver=v$GIT_SEMVER" >> $GITHUB_OUTPUT
 
-          # 2. Actualizar el manifest.php
+          # 3. ACTUALIZAR ARCHIVO
           sed -i "s/'version'\s*=>\s*'[^']*'/'version' => '$NEW_INT_VERSION'/g" manifest.php
           sed -i "s/'published_date'\s*=>\s*'[^']*'/'published_date' => '$NEW_DATE'/g" manifest.php
           
-          # 3. Commit del cambio en el manifest
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          # 4. PUSH SEGURO
           git add manifest.php
-          git commit -m "chore: update manifest to $NEW_INT_VERSION [skip ci]"
+          git commit -m "chore: update manifest to $NEW_INT_VERSION [skip ci]" || echo "No changes to commit"
           git pull --rebase origin main
-          git push
+          git push origin main
 
       # 2. Crear el Tag de Git
       - name: Create Git Tag
