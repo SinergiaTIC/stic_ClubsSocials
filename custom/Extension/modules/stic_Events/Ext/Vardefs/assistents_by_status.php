@@ -64,12 +64,3 @@ $dictionary['stic_Events']['fields']['stic_cs_inherit_reg_c'] = [
     'importable' => 'true',
     'source' => 'custom_fields',
 ];
-$dictionary['stic_Events']['fields']['stic_cs_testfield_c'] = [
-    'name' => 'stic_cs_testfield_c',
-    'vname' => 'LBL_STIC_CS_TESTFIELD',
-    'type' => 'bool',
-    'len' => '11',
-    'audited' => false,
-    'importable' => 'true',
-    'source' => 'custom_fields',
-];
