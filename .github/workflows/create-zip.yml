@@ -102,9 +102,10 @@ jobs:
         with:
           tag_name: ${{ steps.bump_manifest.outputs.semver }}
           name: Release ${{ steps.bump_manifest.outputs.semver }}
-          files: stic_ClubsSocials.zip
+          files: ${{ steps.package_step.outputs.zip_file }}
           body: |
             ## Release ${{ steps.bump_manifest.outputs.semver }}
             - **Internal Build ID (Sinergia):** ${{ steps.bump_manifest.outputs.int_version }}
+            - **Archivo generado:** ${{ steps.package_step.outputs.zip_file }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
