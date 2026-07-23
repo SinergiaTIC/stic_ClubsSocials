@@ -15,3 +15,4 @@ $app_list_strings['stic_contacts_relationships_end_reasons_list']['transfer'] = 
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['vacancy'] = 'Vacant';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['voluntary'] = 'Voluntaria';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['failed'] = 'No supera';
+$app_list_strings['stic_contacts_relationships_end_reasons_list']['go_on'] = 'Segueix endavant';

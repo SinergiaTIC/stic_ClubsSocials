@@ -50,6 +50,13 @@ class stic_EventsSyncRegistrations {
         $child_regs = $child->$rel_name->getBeans();
     
         foreach ($parent_regs as $p_reg) {
+
+
+            $allowed_statuses = array('confirmed', 'participates');
+            if (!in_array($p_reg->status, $allowed_statuses)) {
+                continue;
+            }
+
             $contact_id = $p_reg->stic_registrations_contactscontacts_ida; 
             
             if (empty($contact_id)) {

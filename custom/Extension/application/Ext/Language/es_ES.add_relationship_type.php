@@ -1,6 +1,7 @@
 <?php
 
 $app_list_strings['stic_contacts_relationships_types_list']['pre_user'] = 'Preusuario de servicios';
+
 $app_list_strings['stic_events_types_list']['club'] = 'Club social';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['exitus'] = 'Exitus';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['forced'] = 'Forzosa';
@@ -15,3 +16,4 @@ $app_list_strings['stic_contacts_relationships_end_reasons_list']['transfer'] = 
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['vacancy'] = 'Vacante';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['voluntary'] = 'Voluntaria';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['failed'] = 'No supera';
+$app_list_strings['stic_contacts_relationships_end_reasons_list']['go_on'] = 'Continua adelante';

@@ -1,6 +1,7 @@
 <?php
 
 $app_list_strings['stic_contacts_relationships_types_list']['pre_user'] = 'Zerbitzuetako aurre-erabiltzailea';
+
 $app_list_strings['stic_events_types_list']['club'] = 'Club social';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['exitus'] = 'Exitus';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['forced'] = 'Derrigorrezkoa';
@@ -15,3 +16,4 @@ $app_list_strings['stic_contacts_relationships_end_reasons_list']['transfer'] = 
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['vacancy'] = 'Hutsa';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['voluntary'] = 'Borondatezkoa';
 $app_list_strings['stic_contacts_relationships_end_reasons_list']['failed'] = 'Ez du gainditzen';
+$app_list_strings['stic_contacts_relationships_end_reasons_list']['go_on'] = 'Jarraitu aurrera';
