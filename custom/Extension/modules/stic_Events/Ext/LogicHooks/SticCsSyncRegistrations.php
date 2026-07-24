@@ -24,9 +24,16 @@
 if (!defined('sugarEntry') || !sugarEntry) {
     die('Not A Valid Entry Point');
 }
+$hook_array['after_relationship_add'][] = array(
+    10,
+    'Sincronizar inscripciones Club Social - 1',
+    'custom/Extension/modules/stic_Events/Ext/LogicHooksCode/stic_EventsSyncRegistrations.php',
+    'stic_EventsSyncRegistrations',
+    'syncOnRelationshipAdd'
+);
 $hook_array['after_save'][] = array(
     50,
-    'Sincronizar inscripciones Club Social',
+    'Sincronizar inscripciones Club Social - 2',
     'custom/Extension/modules/stic_Events/Ext/LogicHooksCode/stic_EventsSyncRegistrations.php',
     'stic_EventsSyncRegistrations',
     'syncRegistrations'
