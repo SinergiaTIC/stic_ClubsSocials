@@ -13,7 +13,8 @@ function post_install() {
         '000003d6-0217-6254-b609-69aa83672828',
         '000007e0-9ba3-7573-e524-692f2cf1fe77',
         '00000c32-b952-440a-6870-6980c9e8a40c',
-        'a2e4faff-d837-9268-f4c5-5da5fdda0fa0'
+        'a2e4faff-d837-9268-f4c5-5da5fdda0fa0',
+        '00000275-7165-4b6b-b798-69319b1cfd62'
     ];
 
     // 2. Limpieza: Suprimimos si ya existen para posibles actualizaciones. Estos informes no se deberían modificar.
