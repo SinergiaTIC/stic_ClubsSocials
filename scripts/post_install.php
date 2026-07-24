@@ -9,13 +9,13 @@ function post_install() {
     global $db;
     
     $reportIds = [
-        '000002bb-9a70-fec9-51b2-694a9f4c8340',
-        '000003d6-0217-6254-b609-69aa83672828',
-        '000007e0-9ba3-7573-e524-692f2cf1fe77',
+        '00000275-7165-4b6b-b798-69319b1cfd62',
+        '00000be9-a62a-bb5b-5f1a-6980bfb58e5a',
         '00000c32-b952-440a-6870-6980c9e8a40c',
-        'a2e4faff-d837-9268-f4c5-5da5fdda0fa0',
-        '00000275-7165-4b6b-b798-69319b1cfd62'
-    ];
+        '00000388-4a73-a181-4a7f-69319f4064a0',
+        '000007e0-9ba3-7573-e524-692f2cf1fe77',
+        '000003d6-0217-6254-b609-69aa83672828'
+    ];  
 
     // 2. Limpieza: Suprimimos si ya existen para posibles actualizaciones. Estos informes no se deberían modificar.
     $idsString = "'" . implode("','", $reportIds) . "'";
