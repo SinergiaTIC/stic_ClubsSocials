@@ -3,6 +3,7 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 function post_install() {
 
+    echo "<br><b>[STIC] Instalando en la ruta raíz del servidor:</b> " . __DIR__ . "<br>";
     echo "<br><span style='color: #0000FF; font-weight: bold;'>[STIC] Iniciando carga de nuevos informes...</span><br>";
 
     // Añadir informes al módulo Kreports.
@@ -131,6 +132,84 @@ function post_install() {
     }
     $log->error("STIC_INSTALLER: [END] Proceso terminado.");
     echo "<br><b style='color: #0000FF;'>[STIC] Proceso de vistas finalizado.</b><br>";
+
+    // --- INYECCIÓN DINÁMICA MULTI-IDIOMA CON FALLBACK ---
+    echo "<br><span style='color: #0000FF; font-weight: bold;'>[STIC] Procesando diccionarios multi-idioma para custom/include/language...</span><br>";
+
+    global $sugar_config;
+
+    // 1. Obtener la lista de idiomas activos instalados en la instancia (ej. ['ca_ES' => 'Català', 'es_ES' => 'Español', 'en_us' => 'English'])
+    $enabledLanguages = isset($sugar_config['languages']) ? $sugar_config['languages'] : ['ca_ES' => 'Catalan', 'es_ES' => 'Spanish', 'en_us' => 'English'];
+
+    // Idioma por defecto de fallback en tu extensión si no existe la traducción específica
+    $defaultExtensionLang = 'en_us'; 
+    $fallbackExtensionFile = "custom/Extension/application/Ext/Language/{$defaultExtensionLang}.add_relationship_type.php";
+
+    foreach ($enabledLanguages as $langKey => $langLabel) {
+        echo "<br><b>Procesando idioma [{$langKey}]...</b> ";
+
+        $extensionFile = "custom/Extension/application/Ext/Language/{$langKey}.add_relationship_type.php";
+        $targetLangFile = "custom/include/language/{$langKey}.lang.php";
+
+        // Determinamos qué archivo de la extensión vamos a usar (específico o fallback)
+        $fileToLoad = null;
+        if (file_exists($extensionFile)) {
+            $fileToLoad = $extensionFile;
+        } elseif (file_exists($fallbackExtensionFile)) {
+            $fileToLoad = $fallbackExtensionFile;
+            echo "<span style='color: orange;'>(Sin traducción específica. Usando fallback en inglés '{$defaultExtensionLang}')</span> ";
+        }
+
+        if ($fileToLoad) {
+            // Cargar datos de la extensión
+            $app_list_strings = [];
+            include $fileToLoad;
+            $extensionStrings = $app_list_strings;
+
+            if (!empty($extensionStrings) && is_array($extensionStrings)) {
+                // Cargar datos existentes en custom/include/language para ese idioma concreto
+                $app_list_strings = [];
+                if (file_exists($targetLangFile)) {
+                    include $targetLangFile;
+                }
+
+                // Fusionar valores
+                foreach ($extensionStrings as $listName => $listValues) {
+                    if (!isset($app_list_strings[$listName]) || !is_array($app_list_strings[$listName])) {
+                        $app_list_strings[$listName] = [];
+                    }
+
+                    if (is_array($listValues)) {
+                        foreach ($listValues as $key => $label) {
+                            $app_list_strings[$listName][$key] = $label;
+                        }
+                    }
+                }
+
+                // Asegurar directorio
+                if (!is_dir('custom/include/language')) {
+                    mkdir('custom/include/language', 0755, true);
+                }
+
+                // Guardar el archivo fusionado para este idioma
+                $fileContent = "<?php\n// Actualizado automáticamente por el módulo STIC ({$langKey}) - " . date('Y-m-d H:i:s') . "\n";
+                foreach ($app_list_strings as $listKey => $listArray) {
+                    $fileContent .= "\$app_list_strings['{$listKey}'] = " . var_export($listArray, true) . ";\n";
+                }
+
+                if (file_put_contents($targetLangFile, $fileContent)) {
+                    echo "<span style='color: green;'>¡Completado!</span>";
+                } else {
+                    echo "<span style='color: red;'>Error al escribir {$targetLangFile}. Revisa permisos.</span>";
+                }
+            } else {
+                echo "<span style='color: orange;'>El archivo '{$fileToLoad}' no contiene variables validas.</span>";
+            }
+        } else {
+            echo "<span style='color: red;'>No se encontró ni el idioma ni el archivo por defecto '{$fallbackExtensionFile}'.</span>";
+        }
+    }
+    echo "<br>";
 
     // Forzar reparación y reconstrucción rápida.
     echo "<p>Realizando un <b>Reparar y Reconstruir Rápido</b> para aplicar los cambios visuales y de idiomas.</p><br>";
