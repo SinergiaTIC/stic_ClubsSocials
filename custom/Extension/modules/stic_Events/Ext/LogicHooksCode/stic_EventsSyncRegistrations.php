@@ -181,6 +181,27 @@ class stic_EventsSyncRegistrations {
                     }
                 }
             }
+
+            foreach ($child_regs as $c_reg) {
+                $c_contact_id = $c_reg->stic_registrations_contactscontacts_ida;
+                if (empty($c_contact_id)) {
+                    continue;
+                }
+
+                $found_in_parent = false;
+                foreach ($parent_regs as $p_reg) {
+                    if ($p_reg->stic_registrations_contactscontacts_ida == $c_contact_id) {
+                        $found_in_parent = true;
+                        break;
+                    }
+                }
+
+                if (!$found_in_parent && $c_reg->status !== 'baixa') {
+                    $log->debug("STIC_SYNC: Cambiando estado a 'baixa' para contacto {$c_contact_id} en evento hijo");
+                    $c_reg->status = 'dropped';
+                    $c_reg->save();
+                }
+            }
         } finally {
         $GLOBALS['stic_sync_in_progress'] = false;
         }
