@@ -133,16 +133,19 @@ function post_install() {
     $log->error("STIC_INSTALLER: [END] Proceso terminado.");
     echo "<br><b style='color: #0000FF;'>[STIC] Proceso de vistas finalizado.</b><br>";
 
-    // --- INYECCIÓN DINÁMICA MULTI-IDIOMA CON FALLBACK ---
+    // --- INYECCIÓN MULTI-IDIOMA EN DESPLEGABLES YA PERSONALIZADOS ---
+    // Las etiquetas nuevas se añaden al final de custom/include/language/<idioma>.lang.php
+    // sin reescribir el archivo: así se conservan el resto de desplegables,
+    // $app_strings, $mod_strings u otras personalizaciones que pueda contener.
     echo "<br><span style='color: #0000FF; font-weight: bold;'>[STIC] Procesando diccionarios multi-idioma para custom/include/language...</span><br>";
 
     global $sugar_config;
 
-    // 1. Obtener la lista de idiomas activos instalados en la instancia (ej. ['ca_ES' => 'Català', 'es_ES' => 'Español', 'en_us' => 'English'])
+    // 1. Obtener la lista de idiomas activos instalados en la instancia
     $enabledLanguages = isset($sugar_config['languages']) ? $sugar_config['languages'] : ['ca_ES' => 'Catalan', 'es_ES' => 'Spanish', 'en_us' => 'English'];
 
-    // Idioma por defecto de fallback en tu extensión si no existe la traducción específica
-    $defaultExtensionLang = 'en_us'; 
+    // Idioma por defecto de fallback en la extensión si no existe la traducción específica
+    $defaultExtensionLang = 'en_us';
     $fallbackExtensionFile = "custom/Extension/application/Ext/Language/{$defaultExtensionLang}.add_relationship_type.php";
 
     foreach ($enabledLanguages as $langKey => $langLabel) {
@@ -160,53 +163,103 @@ function post_install() {
             echo "<span style='color: orange;'>(Sin traducción específica. Usando fallback en inglés '{$defaultExtensionLang}')</span> ";
         }
 
-        if ($fileToLoad) {
-            // Cargar datos de la extensión
-            $app_list_strings = [];
-            include $fileToLoad;
-            $extensionStrings = $app_list_strings;
-
-            if (!empty($extensionStrings) && is_array($extensionStrings)) {
-                // Cargar datos existentes en custom/include/language para ese idioma concreto
-                $app_list_strings = [];
-                if (file_exists($targetLangFile)) {
-                    include $targetLangFile;
-                }
-
-                // Fusionar valores
-                foreach ($extensionStrings as $listName => $listValues) {
-                    if (!isset($app_list_strings[$listName]) || !is_array($app_list_strings[$listName])) {
-                        $app_list_strings[$listName] = [];
-                    }
-
-                    if (is_array($listValues)) {
-                        foreach ($listValues as $key => $label) {
-                            $app_list_strings[$listName][$key] = $label;
-                        }
-                    }
-                }
-
-                // Asegurar directorio
-                if (!is_dir('custom/include/language')) {
-                    mkdir('custom/include/language', 0755, true);
-                }
-
-                // Guardar el archivo fusionado para este idioma
-                $fileContent = "<?php\n// Actualizado automáticamente por el módulo STIC ({$langKey}) - " . date('Y-m-d H:i:s') . "\n";
-                foreach ($app_list_strings as $listKey => $listArray) {
-                    $fileContent .= "\$app_list_strings['{$listKey}'] = " . var_export($listArray, true) . ";\n";
-                }
-
-                if (file_put_contents($targetLangFile, $fileContent)) {
-                    echo "<span style='color: green;'>¡Completado!</span>";
-                } else {
-                    echo "<span style='color: red;'>Error al escribir {$targetLangFile}. Revisa permisos.</span>";
-                }
-            } else {
-                echo "<span style='color: orange;'>El archivo '{$fileToLoad}' no contiene variables validas.</span>";
-            }
-        } else {
+        if (!$fileToLoad) {
             echo "<span style='color: red;'>No se encontró ni el idioma ni el archivo por defecto '{$fallbackExtensionFile}'.</span>";
+            continue;
+        }
+
+        // Cargar las etiquetas de la extensión
+        $app_list_strings = [];
+        include $fileToLoad;
+        $extensionStrings = $app_list_strings;
+
+        if (empty($extensionStrings) || !is_array($extensionStrings)) {
+            echo "<span style='color: orange;'>El archivo '{$fileToLoad}' no contiene variables válidas.</span>";
+            continue;
+        }
+
+        // Cargar las etiquetas ya existentes en el archivo custom del idioma,
+        // contemplando tanto $app_list_strings como $GLOBALS['app_list_strings'].
+        $existingStrings = [];
+        if (file_exists($targetLangFile)) {
+            $app_list_strings = [];
+            $previousGlobalAppListStrings = isset($GLOBALS['app_list_strings']) ? $GLOBALS['app_list_strings'] : null;
+
+            include $targetLangFile;
+
+            if (isset($app_list_strings) && is_array($app_list_strings)) {
+                $existingStrings = $app_list_strings;
+            }
+            if (isset($GLOBALS['app_list_strings']) && is_array($GLOBALS['app_list_strings'])) {
+                $existingStrings = array_replace_recursive($GLOBALS['app_list_strings'], $existingStrings);
+            }
+
+            // Restaurar el valor global para no alterar el resto de la instalación
+            if ($previousGlobalAppListStrings === null) {
+                unset($GLOBALS['app_list_strings']);
+            } else {
+                $GLOBALS['app_list_strings'] = $previousGlobalAppListStrings;
+            }
+        }
+
+        // Añadir únicamente las claves que aún no existen para no pisar personalizaciones
+        $newStrings = [];
+        foreach ($extensionStrings as $listName => $listValues) {
+            if (!is_array($listValues)) {
+                continue;
+            }
+            foreach ($listValues as $key => $label) {
+                if (!isset($existingStrings[$listName][$key])) {
+                    $newStrings[$listName][$key] = $label;
+                }
+            }
+        }
+
+        if (empty($newStrings)) {
+            echo "<span style='color: green;'>Sin etiquetas nuevas que añadir.</span>";
+            continue;
+        }
+
+        // Generar solo las asignaciones nuevas, con nombres y claves escapados
+        $newContent = '';
+        foreach ($newStrings as $listName => $listValues) {
+            foreach ($listValues as $key => $label) {
+                $newContent .= '$app_list_strings[' . var_export($listName, true) . '][' . var_export($key, true) . '] = ' . var_export($label, true) . ";\n";
+            }
+        }
+
+        // Asegurar directorio
+        if (!is_dir('custom/include/language')) {
+            mkdir('custom/include/language', 0755, true);
+        }
+
+        if (!file_exists($targetLangFile)) {
+            // Si no existe el archivo custom, crearlo solo con las etiquetas nuevas
+            $fileContent = "<?php\n// Actualizado automáticamente por el módulo STIC ({$langKey}) - " . date('Y-m-d H:i:s') . "\n" . $newContent;
+            $written = file_put_contents($targetLangFile, $fileContent);
+        } else {
+            // Si ya existe, añadir las nuevas asignaciones sin reescribir su contenido
+            $existingContent = file_get_contents($targetLangFile);
+            if ($existingContent === false) {
+                echo "<span style='color: red;'>No se pudo leer {$targetLangFile}.</span>";
+                continue;
+            }
+
+            $appendContent = "\n// STIC Clubs Sociales: nuevas etiquetas - " . date('Y-m-d H:i:s') . "\n" . $newContent;
+            $closePosition = strrpos($existingContent, '?>');
+            if ($closePosition !== false) {
+                $existingContent = substr($existingContent, 0, $closePosition) . $appendContent . substr($existingContent, $closePosition);
+            } else {
+                $existingContent .= $appendContent;
+            }
+
+            $written = file_put_contents($targetLangFile, $existingContent);
+        }
+
+        if ($written !== false) {
+            echo "<span style='color: green;'>¡Completado!</span>";
+        } else {
+            echo "<span style='color: red;'>Error al escribir {$targetLangFile}. Revisa permisos.</span>";
         }
     }
     echo "<br>";
