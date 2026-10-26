@@ -33,6 +33,19 @@ function post_install() {
     ";
 
     $db->query($sql);
+
+    // En instancias nuevas puede no existir el usuario '2' con el que se insertan
+    // los informes. En ese caso, asignarlos al usuario que ejecuta la instalación
+    // para que no queden vinculados a un usuario inexistente.
+    global $current_user;
+    if (!empty($current_user->id)) {
+        $defaultOwnerResult = $db->query("SELECT id FROM users WHERE id = '2' AND deleted = 0");
+        if ($defaultOwnerResult && empty($db->fetchByAssoc($defaultOwnerResult))) {
+            $ownerId = $db->quoted($current_user->id);
+            $db->query("UPDATE kreports SET modified_user_id = {$ownerId}, created_by = {$ownerId}, assigned_user_id = {$ownerId} WHERE id IN ($idsString)");
+        }
+    }
+
     echo "<br><b style='color: #0000FF;'>[STIC] Proceso de carga de informes finalizado.</b><br>";
 
     // Añadir campos al módulo Eventos
