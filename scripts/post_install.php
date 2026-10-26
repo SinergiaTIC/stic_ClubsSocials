@@ -284,7 +284,10 @@ function post_install() {
     $repair = new RepairAndClear();
     $repair->repairAndClearAll(
         array('clearVardefs', 'clearLanguageCache', 'clearTpls'), 
-        array('Contacts', 'stic_Events'), 
+        // Incluimos todos los módulos con vardefs nuevos en el paquete para que
+        // repairDatabase cree también sus columnas (_cstm) sin depender de que
+        // el administrador ejecute después una Reparación Rápida manual.
+        array('Contacts', 'stic_Events', 'stic_Sessions', 'stic_Contacts_Relationships'), 
         true, // auto-execute SQL
         false // no mostrar salida HTML pesada
     );
