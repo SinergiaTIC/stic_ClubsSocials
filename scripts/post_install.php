@@ -23,6 +23,7 @@ function post_install() {
     $deleteSql = "DELETE FROM kreports WHERE id IN ($idsString)";
     $db->query($deleteSql);
 
+    $sql = "INSERT INTO `kreports` (`id`, `name`, `date_entered`, `date_modified`, `modified_user_id`, `created_by`, `description`, `deleted`, `assigned_user_id`, `report_module`, `report_status`, `union_modules`, `reportoptions`, `listtype`, `listtypeproperties`, `selectionlimit`, `presentation_params`, `visualization_params`, `integration_params`, `wheregroups`, `whereconditions`, `listfields`, `unionlistfields`, `advancedoptions`, `report_segmentation`) VALUES
     ('00000275-7165-4b6b-b798-69319b1cfd62', 'Exemple - No modificar - Usos per persona i activitat - Clubs Socials', '2025-12-04 14:30:56', '2026-07-23 16:42:25', '2', '2', NULL, 0, '2', 'Contacts', NULL, NULL, '{\"resultsFolded\":\"open\",\"optionsFolded\":\"open\",\"authCheck\":\"full\",\"showDeleted\":false,\"showExport\":true,\"showSnapshots\":false,\"showTools\":true}', NULL, NULL, NULL, '{\"plugin\":\"standard\",\"pluginData\":{}}', '{\"plugin\":\"googlecharts\",\"layout\":\"-\",\"chartheight\":300,\"height\":\"300\"}', '{\"activePlugins\":{\"kcsvexport\":\"1\",\"ktargetlistexport\":\"1\",\"ksnapshots\":\"0\"}}', '[{\"unionid\":\"root\",\"id\":\"root\",\"group\":\"root\",\"type\":\"AND\",\"parent\":\"-\",\"notexists\":\"\"}]', '[{\"unionid\":\"root\",\"sequence\":\"\",\"fieldid\":\"k918b2c2795956e23e18057be9c1e\",\"name\":\"Per\\u00edode\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"root:Contacts::link:Contacts:stic_registrations_contacts::link:stic_Registrations:stic_attendances_stic_registrations::field:start_date\",\"displaypath\":\"Contacts::Inscripcions::Assistu00e8ncies\",\"referencefieldid\":\"\",\"operator\":\"ignore\",\"type\":\"datetimecombo\",\"value\":\"\",\"valuekey\":\"\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"\",\"include\":\"\",\"usereditable\":\"yes\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"},{\"unionid\":\"root\",\"sequence\":\"\",\"fieldid\":\"k19488b4d7ee03f161039031a612a\",\"name\":\"Activitat\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"root:Contacts::link:Contacts:stic_registrations_contacts::link:stic_Registrations:stic_registrations_stic_events::field:name\",\"displaypath\":\"Contacts::Inscripcions::Esdeveniment\",\"referencefieldid\":\"\",\"operator\":\"ignore\",\"type\":\"name\",\"value\":\"\",\"valuekey\":\"\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"\",\"include\":\"\",\"usereditable\":\"yes\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"},{\"unionid\":\"root\",\"sequence\":\"\",\"fieldid\":\"k01dfe1e08e811e9df1179aae0488\",\"name\":\"Projecte de l\'esdeveniment\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"root:Contacts::link:Contacts:stic_registrations_contacts::link:stic_Registrations:stic_registrations_stic_events::link:stic_Events:stic_events_project::field:name\",\"displaypath\":\"Contacts::Inscripcions::Esdeveniment::Projecte\",\"referencefieldid\":\"\",\"operator\":\"contains\",\"type\":\"name\",\"value\":\"club social\",\"valuekey\":\"\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"\",\"include\":\"\",\"usereditable\":\"yes\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"}]', '[{\"fieldid\":\"kc1f3749eb6811df64548a4388391\",\"sequence\":\"01\",\"fieldname\":\"ID:\",\"name\":\"ID persona\",\"display\":\"no\",\"path\":\"root:Contacts::field:id\",\"displaypath\":\"Contacts\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":\"100\",\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"\",\"valuetype\":\"\",\"groupby\":\"yes\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"k2d43264eda5d1f20849c219e1b82\",\"sequence\":\"02\",\"fieldname\":\"Nom:\",\"name\":\"Usuari\",\"display\":\"yes\",\"path\":\"root:Contacts::field:first_name\",\"displaypath\":\"Contacts\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":250,\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"Y29uY2F0JTI4JTdCdCU3RC5maXJzdF9uYW1lJTJDJTIwJTI3JTIwJTI3JTJDJTIwJTdCdCU3RC5sYXN0X25hbWUlMjk=\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"yes\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"k0ce18a946d2b57f25963f7bbb897\",\"sequence\":\"03\",\"fieldname\":\"Nom\",\"name\":\"Activitat\",\"display\":\"yes\",\"path\":\"root:Contacts::link:Contacts:stic_registrations_contacts::link:stic_Registrations:stic_registrations_stic_events::field:name\",\"displaypath\":\"Contacts::Inscripcions::Esdeveniment\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":250,\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"yes\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"kefdb71c49cd05524edec82f6368b\",\"sequence\":\"04\",\"fieldname\":\"ID\",\"name\":\"ID ESDE\",\"display\":\"no\",\"path\":\"root:Contacts::link:Contacts:stic_registrations_contacts::link:stic_Registrations:stic_registrations_stic_events::field:id\",\"displaypath\":\"Contacts::Inscripcions::Esdeveniment\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":100,\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"\",\"valuetype\":\"\",\"groupby\":\"yes\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"kafcfd7cc378f83ce2b1a5a7acfd0\",\"sequence\":\"06\",\"fieldname\":\"Estat\",\"name\":\"Usos\",\"display\":\"yes\",\"path\":\"root:Contacts::link:Contacts:stic_registrations_contacts::link:stic_Registrations:stic_attendances_stic_registrations::field:status\",\"displaypath\":\"Contacts::Inscripcions::Assistu00e8ncies\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":\"100\",\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"c3VtJTI4aWYlMjAlMjhzdHJjbXAlMjglN0J0JTdELnN0YXR1cyUyQyUyMCUyN3llcyUyNyUyOSUzRDAlMkMlMjAxJTJDJTIwMCUyOSUyOQ==\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"}]', NULL, NULL, NULL),
     ('00000be9-a62a-bb5b-5f1a-6980bfb58e5a', 'Exemple - No modificar - Registre d\'activitats - Clubs Socials', '2026-02-02 15:14:42', '2026-07-23 16:41:17', '2', '2', NULL, 0, '2', 'stic_Events', NULL, '[{\"unionid\":\"kceda18e5dea7556cdb173a59f809\",\"module\":\"stic_Events\"}]', '{\"resultsFolded\":\"open\",\"optionsFolded\":\"open\",\"authCheck\":\"full\",\"showDeleted\":false,\"showExport\":true,\"showSnapshots\":false,\"showTools\":true}', NULL, NULL, NULL, '{\"plugin\":\"standard\",\"pluginData\":{}}', '{\"plugin\":\"googlecharts\",\"layout\":\"-\",\"chartheight\":300,\"height\":\"300\"}', '{\"activePlugins\":{\"kcsvexport\":\"1\",\"ktargetlistexport\":\"0\",\"ksnapshots\":\"0\"}}', '[{\"unionid\":\"root\",\"id\":\"root\",\"group\":\"root\",\"type\":\"AND\",\"parent\":\"-\",\"notexists\":\"\"},{\"unionid\":\"kceda18e5dea7556cdb173a59f809\",\"id\":\"root\",\"group\":\"root\",\"type\":\"AND\",\"parent\":\"-\",\"notexists\":\"\"}]', '[{\"unionid\":\"root\",\"sequence\":\"2\",\"fieldid\":\"k82546664eb4c9edee0d0b04f4a55\",\"name\":\"Projecte de l\'esdeveniment\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"root:stic_Events::link:stic_Events:stic_events_project::field:name\",\"displaypath\":\"stic_Events::Projecte\",\"referencefieldid\":\"\",\"operator\":\"contains\",\"type\":\"name\",\"value\":\"club social\",\"valuekey\":\"\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"projecte\",\"include\":\"\",\"usereditable\":\"yes\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"},{\"unionid\":\"root\",\"sequence\":\"1\",\"fieldid\":\"k66b968617d4639a0bd93a86a3d75\",\"name\":\"Per\\u00edode\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"root:stic_Events::link:stic_Events:stic_sessions_stic_events::field:start_date\",\"displaypath\":\"stic_Events::Sessions\",\"referencefieldid\":\"\",\"operator\":\"ignore\",\"type\":\"datetimecombo\",\"value\":\"\",\"valuekey\":\"\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"data\",\"include\":\"\",\"usereditable\":\"yes\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"},{\"unionid\":\"kceda18e5dea7556cdb173a59f809\",\"sequence\":\"\",\"fieldid\":\"k962b2299c6eec78a485d0fff1db5\",\"name\":\"Estat\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"unionroot::unionkceda18e5dea7556cdb173a59f809:stic_Events::link:stic_Events:stic_sessions_stic_events::link:stic_Sessions:stic_attendances_stic_sessions::field:status\",\"displaypath\":\"stic_Events::Sessions::Assistu00e8ncies\",\"referencefieldid\":\"\",\"operator\":\"equals\",\"type\":\"enum\",\"value\":\"Su00ed\",\"valuekey\":\"yes\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"\",\"include\":\"\",\"usereditable\":\"no\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"},{\"unionid\":\"kceda18e5dea7556cdb173a59f809\",\"sequence\":\"\",\"fieldid\":\"k9e5727114990c13b20e6980e8fd0\",\"name\":\"Data d\'inici\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"unionroot::unionkceda18e5dea7556cdb173a59f809:stic_Events::link:stic_Events:stic_sessions_stic_events::field:start_date\",\"displaypath\":\"stic_Events::Sessions\",\"referencefieldid\":\"\",\"operator\":\"reference\",\"type\":\"datetimecombo\",\"value\":\"data\",\"valuekey\":\"\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"\",\"include\":\"\",\"usereditable\":\"no\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"},{\"unionid\":\"kceda18e5dea7556cdb173a59f809\",\"sequence\":\"\",\"fieldid\":\"ke7b70c59e6350ea4b98e46bc6858\",\"name\":\"Nom:\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"unionroot::unionkceda18e5dea7556cdb173a59f809:stic_Events::link:stic_Events:stic_events_project::field:name\",\"displaypath\":\"stic_Events::Projecte\",\"referencefieldid\":\"\",\"operator\":\"reference\",\"type\":\"name\",\"value\":\"projecte\",\"valuekey\":\"\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"\",\"include\":\"\",\"usereditable\":\"no\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"}]', '[{\"fieldid\":\"k04f463bb8faf002d932a3bae15ad\",\"sequence\":\"01\",\"fieldname\":\"ID\",\"name\":\"ID\",\"display\":\"no\",\"path\":\"root:stic_Events::field:id\",\"displaypath\":\"stic_Events\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":\"100\",\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"\",\"valuetype\":\"\",\"groupby\":\"yes\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"ke2167857a59b6db29dce2a036b4c\",\"sequence\":\"02\",\"fieldname\":\"Nom\",\"name\":\"Activitat\",\"display\":\"yes\",\"path\":\"root:stic_Events::field:name\",\"displaypath\":\"stic_Events\",\"sort\":\"asc\",\"sortpriority\":\"\",\"width\":200,\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"yes\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"kf7a65b5949b11d37cca2e6037938\",\"sequence\":\"03\",\"fieldname\":\"ID\",\"name\":\"Sessions Activitat\",\"display\":\"yes\",\"path\":\"root:stic_Events::link:stic_Events:stic_sessions_stic_events::field:id\",\"displaypath\":\"stic_Events::Sessions\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":125,\"jointype\":\"required\",\"sqlfunction\":\"COUNT_DISTINCT\",\"summaryfunction\":\"\",\"customsqlfunction\":\"\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"kc07b05e4cc7050575d16fa340d79\",\"sequence\":\"04\",\"fieldname\":\"Durada de la sessiu00f3\",\"name\":\"Hores sessions\",\"display\":\"yes\",\"path\":\"root:stic_Events::link:stic_Events:stic_sessions_stic_events::field:duration\",\"displaypath\":\"stic_Events::Sessions\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":\"100\",\"jointype\":\"required\",\"sqlfunction\":\"SUM\",\"summaryfunction\":\"\",\"customsqlfunction\":\"\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"k84e711ab068ec7b641e852c18f75\",\"sequence\":\"05\",\"fieldname\":\"Estat\",\"name\":\"Usos Activitat\",\"display\":\"yes\",\"path\":\"root:stic_Events::link:stic_Events:stic_sessions_stic_events::link:stic_Sessions:stic_attendances_stic_sessions::field:status\",\"displaypath\":\"stic_Events::Sessions::Assistu00e8ncies\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":\"100\",\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"c3VtJTI4aWYlMjAlMjhzdHJjbXAlMjglN0J0JTdELnN0YXR1cyUyQyUyMCUyN3llcyUyNyUyOSUzRDAlMkMlMjAxJTJDJTIwMCUyOSUyOQ==\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"k6e47c1104756d91dc549297a98b8\",\"sequence\":\"06\",\"fieldname\":\"\",\"name\":\"Usuaris Activitat\",\"display\":\"yes\",\"path\":\"\",\"displaypath\":\"\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":\"100\",\"jointype\":\"required\",\"sqlfunction\":\"COUNT_DISTINCT\",\"summaryfunction\":\"\",\"customsqlfunction\":\"\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"}]', '[{\"joinid\":\"kceda18e5dea7556cdb173a59f809\",\"fieldid\":\"k04f463bb8faf002d932a3bae15ad\",\"sequence\":\"01\",\"name\":\"ID\",\"unionfieldpath\":\"unionkceda18e5dea7556cdb173a59f809:stic_Events::field:id\",\"unionfielddisplaypath\":\"stic_Events\",\"unionfieldname\":\"ID\",\"path\":\"root:stic_Events::field:id\",\"displaypath\":\"stic_Events\",\"fixedvalue\":\"\"},{\"joinid\":\"kceda18e5dea7556cdb173a59f809\",\"fieldid\":\"ke2167857a59b6db29dce2a036b4c\",\"sequence\":\"02\",\"name\":\"Activitat\",\"unionfieldpath\":\"unionkceda18e5dea7556cdb173a59f809:stic_Events::field:name\",\"unionfielddisplaypath\":\"stic_Events\",\"unionfieldname\":\"Nom\",\"path\":\"root:stic_Events::field:name\",\"displaypath\":\"stic_Events\",\"fixedvalue\":\"\"},{\"joinid\":\"kceda18e5dea7556cdb173a59f809\",\"fieldid\":\"kf7a65b5949b11d37cca2e6037938\",\"sequence\":\"03\",\"name\":\"Sessions Activitat\",\"unionfieldpath\":\"\",\"unionfielddisplaypath\":\"\",\"unionfieldname\":\"\",\"path\":\"root:stic_Events::link:stic_Events:stic_sessions_stic_events::field:id\",\"displaypath\":\"stic_Events::Sessions\",\"fixedvalue\":\"\"},{\"joinid\":\"kceda18e5dea7556cdb173a59f809\",\"fieldid\":\"kc07b05e4cc7050575d16fa340d79\",\"sequence\":\"04\",\"name\":\"Hores sessions\",\"unionfieldpath\":\"\",\"unionfielddisplaypath\":\"\",\"unionfieldname\":\"\",\"path\":\"root:stic_Events::link:stic_Events:stic_sessions_stic_events::field:duration\",\"displaypath\":\"stic_Events::Sessions\",\"fixedvalue\":\"\"},{\"joinid\":\"kceda18e5dea7556cdb173a59f809\",\"fieldid\":\"k84e711ab068ec7b641e852c18f75\",\"sequence\":\"05\",\"name\":\"Usos Activitat\",\"unionfieldpath\":\"\",\"unionfielddisplaypath\":\"\",\"unionfieldname\":\"\",\"path\":\"root:stic_Events::link:stic_Events:stic_sessions_stic_events::link:stic_Sessions:stic_attendances_stic_sessions::field:status\",\"displaypath\":\"stic_Events::Sessions::Assistu00e8ncies\",\"fixedvalue\":\"\"},{\"joinid\":\"kceda18e5dea7556cdb173a59f809\",\"fieldid\":\"k6e47c1104756d91dc549297a98b8\",\"sequence\":\"06\",\"name\":\"Usuaris Activitat\",\"unionfieldpath\":\"unionkceda18e5dea7556cdb173a59f809:stic_Events::link:stic_Events:stic_sessions_stic_events::link:stic_Sessions:stic_attendances_stic_sessions::link:stic_Attendances:stic_attendances_stic_registrations::field:id\",\"unionfielddisplaypath\":\"stic_Events::Sessions::Assistu00e8ncies::Inscripciu00f3\",\"unionfieldname\":\"ID\",\"path\":\"\",\"displaypath\":\"\",\"fixedvalue\":\"\"}]', NULL, NULL),
     ('00000c32-b952-440a-6870-6980c9e8a40c', 'Exemple - No modificar - Assistències setmana - Clubs Socials', '2026-02-02 15:59:52', '2026-07-23 16:39:23', '2', '2', NULL, 0, '2', 'stic_Sessions', NULL, NULL, '{\"resultsFolded\":\"open\",\"optionsFolded\":\"open\",\"authCheck\":\"full\",\"showDeleted\":false,\"showExport\":true,\"showSnapshots\":false,\"showTools\":true}', NULL, NULL, NULL, '{\"plugin\":\"standard\",\"pluginData\":{}}', '{\"plugin\":\"googlecharts\",\"layout\":\"-\",\"chartheight\":300,\"height\":\"300\"}', '{\"activePlugins\":{\"kcsvexport\":\"1\",\"ktargetlistexport\":\"0\",\"ksnapshots\":\"0\"}}', '[{\"unionid\":\"root\",\"id\":\"root\",\"group\":\"root\",\"type\":\"AND\",\"parent\":\"-\",\"notexists\":\"\"}]', '[{\"unionid\":\"root\",\"sequence\":\"\",\"fieldid\":\"keebbaa263b6e3ad2de9e816c9636\",\"name\":\"Per\\u00edode\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"root:stic_Sessions::field:start_date\",\"displaypath\":\"stic_Sessions\",\"referencefieldid\":\"\",\"operator\":\"lastmonth\",\"type\":\"datetimecombo\",\"value\":\"\",\"valuekey\":\"\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"\",\"include\":\"\",\"usereditable\":\"yes\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"},{\"unionid\":\"root\",\"sequence\":\"\",\"fieldid\":\"k0f493545d105d84a597129c72dfd\",\"name\":\"Projecte de l\'esdeveniment\",\"fixedvalue\":\"\",\"groupid\":\"root\",\"path\":\"root:stic_Sessions::link:stic_Sessions:stic_sessions_stic_events::link:stic_Events:stic_events_project::field:name\",\"displaypath\":\"stic_Sessions::Esdeveniment::Projecte\",\"referencefieldid\":\"\",\"operator\":\"contains\",\"type\":\"name\",\"value\":\"club social\",\"valuekey\":\"\",\"valueto\":\"\",\"valuetokey\":\"\",\"jointype\":\"required\",\"context\":\"\",\"reference\":\"\",\"include\":\"\",\"usereditable\":\"yes\",\"dashleteditable\":\"no\",\"exportpdf\":\"no\",\"customsqlfunction\":\"\"}]', '[{\"fieldid\":\"k5ec62042f9415ff46103ac89077e\",\"sequence\":\"01\",\"fieldname\":\"Data d\'inici\",\"name\":\"N\\u00ba de setmana\",\"display\":\"yes\",\"path\":\"root:stic_Sessions::field:start_date\",\"displaypath\":\"stic_Sessions\",\"sort\":\"asc\",\"sortpriority\":\"\",\"width\":\"100\",\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"ZGF0ZV9mb3JtYXQlMjglN0J0JTdELiU3QmYlN0QlMkMlMjclMjVVJTI3JTI5\",\"valuetype\":\"\",\"groupby\":\"yes\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":null},{\"fieldid\":\"k02f0dd4274d8026a278250d23a45\",\"sequence\":\"02\",\"fieldname\":\"Data d\'inici\",\"name\":\"Dates setmana\",\"display\":\"yes\",\"path\":\"root:stic_Sessions::field:start_date\",\"displaypath\":\"stic_Sessions\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":175,\"jointype\":\"required\",\"sqlfunction\":\"-\",\"summaryfunction\":\"\",\"customsqlfunction\":\"Y29uY2F0JTI4JTBBJTIwJTIwJTIwJTIwZGF0ZV9mb3JtYXQlMjhkYXRlX3N1YiUyOCU3QnQlN0QuJTdCZiU3RCUyQyUyMGludGVydmFsJTIwd2Vla2RheSUyOCU3QnQlN0QuJTdCZiU3RCUyOSUyMGRheSUyOSUyQyUyMCUyNyUyNWQvJTI1bS8lMjVZJTI3JTI5JTJDJTIwJTBBJTIwJTIwJTIwJTIwJTI3JTIwYWwlMjAlMjclMkMlMEElMjAlMjAlMjAlMjBkYXRlX2Zvcm1hdCUyOGRhdGVfYWRkJTI4JTdCdCU3RC4lN0JmJTdEJTJDJTIwaW50ZXJ2YWwlMjAlMjg2JTIwLSUyMHdlZWtkYXklMjglN0J0JTdELiU3QmYlN0QlMjklMjklMjBkYXklMjklMkMlMjAlMjclMjVkLyUyNW0vJTI1WSUyNyUyOSUwQSUyOQ==\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"},{\"fieldid\":\"kcd243cc21aaf0d4d09fb024e5e70\",\"sequence\":\"03\",\"fieldname\":\"ID\",\"name\":\"Assist\\u00e8ncia de persones diferents\",\"display\":\"yes\",\"path\":\"root:stic_Sessions::link:stic_Sessions:stic_attendances_stic_sessions::field:id\",\"displaypath\":\"stic_Sessions::Assistu00e8ncies\",\"sort\":\"-\",\"sortpriority\":\"\",\"width\":175,\"jointype\":\"required\",\"sqlfunction\":\"COUNT_DISTINCT\",\"summaryfunction\":\"\",\"customsqlfunction\":\"U0VMRUNUJTIwc2Fzci5zdGljX2F0dGVuZGFuY2VzX3N0aWNfcmVnaXN0cmF0aW9uc3N0aWNfcmVnaXN0cmF0aW9uc19pZGElMjBGUk9NJTIwc3RpY19hdHRlbmRhbmNlcyUyMHNhJTIwJTBBSk9JTiUyMHN0aWNfYXR0ZW5kYW5jZXNfc3RpY19yZWdpc3RyYXRpb25zX2MlMjBzYXNyJTIwT04lMjBzYXNyLnN0aWNfYXR0ZW5kYW5jZXNfc3RpY19yZWdpc3RyYXRpb25zc3RpY19hdHRlbmRhbmNlc19pZGIlMjAlM0QlMjBzYS5pZCUyMCUwQVdIRVJFJTIwc2EuaWQlMjAlM0QlMjAlN0J0JTdELiU3QmYlN0QlMjBBTkQlMjBzYS5zdGF0dXMlMjBsaWtlJTIwJTI3eWVzJTI3JTIw\",\"valuetype\":\"\",\"groupby\":\"no\",\"link\":\"no\",\"editable\":\"\",\"fixedvalue\":\"\",\"assigntovalue\":\"\",\"formulavalue\":\"\",\"formulasequence\":\"\",\"widget\":\"\",\"overridetype\":\"\",\"overridealignment\":\"\"}]', NULL, NULL, NULL),
@@ -32,6 +33,19 @@ function post_install() {
     ";
 
     $db->query($sql);
+
+    // En instancias nuevas puede no existir el usuario '2' con el que se insertan
+    // los informes. En ese caso, asignarlos al usuario que ejecuta la instalación
+    // para que no queden vinculados a un usuario inexistente.
+    global $current_user;
+    if (!empty($current_user->id)) {
+        $defaultOwnerResult = $db->query("SELECT id FROM users WHERE id = '2' AND deleted = 0");
+        if ($defaultOwnerResult && empty($db->fetchByAssoc($defaultOwnerResult))) {
+            $ownerId = $db->quoted($current_user->id);
+            $db->query("UPDATE kreports SET modified_user_id = {$ownerId}, created_by = {$ownerId}, assigned_user_id = {$ownerId} WHERE id IN ($idsString)");
+        }
+    }
+
     echo "<br><b style='color: #0000FF;'>[STIC] Proceso de carga de informes finalizado.</b><br>";
 
     // Añadir campos al módulo Eventos
@@ -132,16 +146,19 @@ function post_install() {
     $log->error("STIC_INSTALLER: [END] Proceso terminado.");
     echo "<br><b style='color: #0000FF;'>[STIC] Proceso de vistas finalizado.</b><br>";
 
-    // --- INYECCIÓN DINÁMICA MULTI-IDIOMA CON FALLBACK ---
+    // --- INYECCIÓN MULTI-IDIOMA EN DESPLEGABLES YA PERSONALIZADOS ---
+    // Las etiquetas nuevas se añaden al final de custom/include/language/<idioma>.lang.php
+    // sin reescribir el archivo: así se conservan el resto de desplegables,
+    // $app_strings, $mod_strings u otras personalizaciones que pueda contener.
     echo "<br><span style='color: #0000FF; font-weight: bold;'>[STIC] Procesando diccionarios multi-idioma para custom/include/language...</span><br>";
 
     global $sugar_config;
 
-    // 1. Obtener la lista de idiomas activos instalados en la instancia (ej. ['ca_ES' => 'Català', 'es_ES' => 'Español', 'en_us' => 'English'])
+    // 1. Obtener la lista de idiomas activos instalados en la instancia
     $enabledLanguages = isset($sugar_config['languages']) ? $sugar_config['languages'] : ['ca_ES' => 'Catalan', 'es_ES' => 'Spanish', 'en_us' => 'English'];
 
-    // Idioma por defecto de fallback en tu extensión si no existe la traducción específica
-    $defaultExtensionLang = 'en_us'; 
+    // Idioma por defecto de fallback en la extensión si no existe la traducción específica
+    $defaultExtensionLang = 'en_us';
     $fallbackExtensionFile = "custom/Extension/application/Ext/Language/{$defaultExtensionLang}.add_relationship_type.php";
 
     foreach ($enabledLanguages as $langKey => $langLabel) {
@@ -159,53 +176,103 @@ function post_install() {
             echo "<span style='color: orange;'>(Sin traducción específica. Usando fallback en inglés '{$defaultExtensionLang}')</span> ";
         }
 
-        if ($fileToLoad) {
-            // Cargar datos de la extensión
-            $app_list_strings = [];
-            include $fileToLoad;
-            $extensionStrings = $app_list_strings;
-
-            if (!empty($extensionStrings) && is_array($extensionStrings)) {
-                // Cargar datos existentes en custom/include/language para ese idioma concreto
-                $app_list_strings = [];
-                if (file_exists($targetLangFile)) {
-                    include $targetLangFile;
-                }
-
-                // Fusionar valores
-                foreach ($extensionStrings as $listName => $listValues) {
-                    if (!isset($app_list_strings[$listName]) || !is_array($app_list_strings[$listName])) {
-                        $app_list_strings[$listName] = [];
-                    }
-
-                    if (is_array($listValues)) {
-                        foreach ($listValues as $key => $label) {
-                            $app_list_strings[$listName][$key] = $label;
-                        }
-                    }
-                }
-
-                // Asegurar directorio
-                if (!is_dir('custom/include/language')) {
-                    mkdir('custom/include/language', 0755, true);
-                }
-
-                // Guardar el archivo fusionado para este idioma
-                $fileContent = "<?php\n// Actualizado automáticamente por el módulo STIC ({$langKey}) - " . date('Y-m-d H:i:s') . "\n";
-                foreach ($app_list_strings as $listKey => $listArray) {
-                    $fileContent .= "\$app_list_strings['{$listKey}'] = " . var_export($listArray, true) . ";\n";
-                }
-
-                if (file_put_contents($targetLangFile, $fileContent)) {
-                    echo "<span style='color: green;'>¡Completado!</span>";
-                } else {
-                    echo "<span style='color: red;'>Error al escribir {$targetLangFile}. Revisa permisos.</span>";
-                }
-            } else {
-                echo "<span style='color: orange;'>El archivo '{$fileToLoad}' no contiene variables validas.</span>";
-            }
-        } else {
+        if (!$fileToLoad) {
             echo "<span style='color: red;'>No se encontró ni el idioma ni el archivo por defecto '{$fallbackExtensionFile}'.</span>";
+            continue;
+        }
+
+        // Cargar las etiquetas de la extensión
+        $app_list_strings = [];
+        include $fileToLoad;
+        $extensionStrings = $app_list_strings;
+
+        if (empty($extensionStrings) || !is_array($extensionStrings)) {
+            echo "<span style='color: orange;'>El archivo '{$fileToLoad}' no contiene variables válidas.</span>";
+            continue;
+        }
+
+        // Cargar las etiquetas ya existentes en el archivo custom del idioma,
+        // contemplando tanto $app_list_strings como $GLOBALS['app_list_strings'].
+        $existingStrings = [];
+        if (file_exists($targetLangFile)) {
+            $app_list_strings = [];
+            $previousGlobalAppListStrings = isset($GLOBALS['app_list_strings']) ? $GLOBALS['app_list_strings'] : null;
+
+            include $targetLangFile;
+
+            if (isset($app_list_strings) && is_array($app_list_strings)) {
+                $existingStrings = $app_list_strings;
+            }
+            if (isset($GLOBALS['app_list_strings']) && is_array($GLOBALS['app_list_strings'])) {
+                $existingStrings = array_replace_recursive($GLOBALS['app_list_strings'], $existingStrings);
+            }
+
+            // Restaurar el valor global para no alterar el resto de la instalación
+            if ($previousGlobalAppListStrings === null) {
+                unset($GLOBALS['app_list_strings']);
+            } else {
+                $GLOBALS['app_list_strings'] = $previousGlobalAppListStrings;
+            }
+        }
+
+        // Añadir únicamente las claves que aún no existen para no pisar personalizaciones
+        $newStrings = [];
+        foreach ($extensionStrings as $listName => $listValues) {
+            if (!is_array($listValues)) {
+                continue;
+            }
+            foreach ($listValues as $key => $label) {
+                if (!isset($existingStrings[$listName][$key])) {
+                    $newStrings[$listName][$key] = $label;
+                }
+            }
+        }
+
+        if (empty($newStrings)) {
+            echo "<span style='color: green;'>Sin etiquetas nuevas que añadir.</span>";
+            continue;
+        }
+
+        // Generar solo las asignaciones nuevas, con nombres y claves escapados
+        $newContent = '';
+        foreach ($newStrings as $listName => $listValues) {
+            foreach ($listValues as $key => $label) {
+                $newContent .= '$app_list_strings[' . var_export($listName, true) . '][' . var_export($key, true) . '] = ' . var_export($label, true) . ";\n";
+            }
+        }
+
+        // Asegurar directorio
+        if (!is_dir('custom/include/language')) {
+            mkdir('custom/include/language', 0755, true);
+        }
+
+        if (!file_exists($targetLangFile)) {
+            // Si no existe el archivo custom, crearlo solo con las etiquetas nuevas
+            $fileContent = "<?php\n// Actualizado automáticamente por el módulo STIC ({$langKey}) - " . date('Y-m-d H:i:s') . "\n" . $newContent;
+            $written = file_put_contents($targetLangFile, $fileContent);
+        } else {
+            // Si ya existe, añadir las nuevas asignaciones sin reescribir su contenido
+            $existingContent = file_get_contents($targetLangFile);
+            if ($existingContent === false) {
+                echo "<span style='color: red;'>No se pudo leer {$targetLangFile}.</span>";
+                continue;
+            }
+
+            $appendContent = "\n// STIC Clubs Sociales: nuevas etiquetas - " . date('Y-m-d H:i:s') . "\n" . $newContent;
+            $closePosition = strrpos($existingContent, '?>');
+            if ($closePosition !== false) {
+                $existingContent = substr($existingContent, 0, $closePosition) . $appendContent . substr($existingContent, $closePosition);
+            } else {
+                $existingContent .= $appendContent;
+            }
+
+            $written = file_put_contents($targetLangFile, $existingContent);
+        }
+
+        if ($written !== false) {
+            echo "<span style='color: green;'>¡Completado!</span>";
+        } else {
+            echo "<span style='color: red;'>Error al escribir {$targetLangFile}. Revisa permisos.</span>";
         }
     }
     echo "<br>";
@@ -230,7 +297,10 @@ function post_install() {
     $repair = new RepairAndClear();
     $repair->repairAndClearAll(
         array('clearVardefs', 'clearLanguageCache', 'clearTpls'), 
-        array('Contacts', 'stic_Events'), 
+        // Incluimos todos los módulos con vardefs nuevos en el paquete para que
+        // repairDatabase cree también sus columnas (_cstm) sin depender de que
+        // el administrador ejecute después una Reparación Rápida manual.
+        array('Contacts', 'stic_Events', 'stic_Sessions', 'stic_Contacts_Relationships'), 
         true, // auto-execute SQL
         false // no mostrar salida HTML pesada
     );
