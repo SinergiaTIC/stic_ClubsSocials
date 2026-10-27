@@ -297,13 +297,30 @@ function post_install() {
     $repair = new RepairAndClear();
     $repair->repairAndClearAll(
         array('clearVardefs', 'clearLanguageCache', 'clearTpls'), 
-        // Incluimos todos los módulos con vardefs nuevos en el paquete para que
-        // repairDatabase cree también sus columnas (_cstm) sin depender de que
-        // el administrador ejecute después una Reparación Rápida manual.
         array('Contacts', 'stic_Events', 'stic_Sessions', 'stic_Contacts_Relationships'), 
         true, // auto-execute SQL
         false // no mostrar salida HTML pesada
     );
+
+    // repairAndClearAll() con una lista de módulos ejecuta repairDatabaseSelectModules(),
+    // que solo llama a DBManager::repairTable(). repairTableParams() omite los campos con
+    // source != 'db', por lo que las columnas _cstm de los campos definidos únicamente en
+    // vardefs (source = 'custom_fields') nunca se creaban. Sin esas columnas, usar el campo
+    // en una vista de lista o en un subpanel provoca errores SQL ("Unknown column") y la
+    // vista aparece vacía o muestra el error genérico de base de datos.
+    // Reparamos explícitamente los campos personalizados de los módulos del paquete para
+    // que las columnas que falten se creen a partir de los vardefs.
+    require_once('modules/DynamicFields/DynamicField.php');
+    $customFieldModules = array('stic_Events', 'stic_Sessions', 'stic_Contacts_Relationships', 'Contacts');
+    foreach ($customFieldModules as $customFieldModule) {
+        $moduleBean = BeanFactory::getBean($customFieldModule);
+        if (empty($moduleBean)) {
+            continue;
+        }
+        $dynamicField = new DynamicField($customFieldModule);
+        $dynamicField->bean = $moduleBean;
+        $dynamicField->repairCustomFields(true);
+    }
 
     // echo "<p>Limpiando caché de extensiones...</p>";
     // require_once('modules/Administration/QuickRepairAndRebuild.php');

@@ -25,6 +25,14 @@ $installdefs = [
     'scripts' => [
         'post_install' => '<basepath>/scripts/post_install.php',
     ],
+    // Relación de auto-referencia Evento principal -> Subeventos. Al declararla en el
+    // manifiesto, ModuleInstaller::install_relationships() crea la tabla de unión
+    // stic_events_stic_events_1_c si no existe (por ejemplo en instalaciones nuevas).
+    'relationships' => [
+        [
+            'meta_data' => '<basepath>/custom/metadata/stic_events_stic_events_1MetaData.php',
+        ],
+    ],
 ];
 
 $upgrade_manifest = [
