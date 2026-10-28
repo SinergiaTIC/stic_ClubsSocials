@@ -1,25 +1,36 @@
 name: Auto Version, Manifest Update and Release
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
 
 jobs:
   publish:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout code
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
-          fetch-depth: '0'
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # 1. Calcular versiones y actualizar manifest.php
       - name: Bump manifest.php version and date
         id: bump_manifest
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           # 1. Configurar Identidad
           git config --local user.email "action@github.com"
@@ -28,27 +39,29 @@ jobs:
           # 2. LÓGICA DE VERSIONES
           NEW_INT_VERSION=$(date +%s)
           NEW_DATE=$(date +"%Y-%m-%d %H:%M:%S")
-          
-          # Obtener el último tag
+
+          # Obtener el último tag (por si checkout no los ha traído todos)
+          git fetch --tags --force
           RAW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "DEBUG: Tag crudo detectado en Git: $RAW_TAG"
-          
+
           # Limpiar caracteres no numéricos (v0.0.1 -> 0.0.1)
-          VERSION_ONLY=$(echo $RAW_TAG | sed 's/[^0-9.]//g')
+          VERSION_ONLY=$(echo "$RAW_TAG" | sed 's/[^0-9.]//g')
           echo "DEBUG: Versión limpia (solo números): $VERSION_ONLY"
-          
+
           # Asegurar que tenemos 3 partes (major.minor.patch)
-          if [[ $VERSION_ONLY != *.*.* ]]; then 
+          if [[ $VERSION_ONLY != *.*.* ]]; then
             echo "DEBUG: Formato no reconocido, reseteando a 0.0.0"
             VERSION_ONLY="0.0.0"
           fi
-          
+
           IFS='.' read -r major minor patch <<< "$VERSION_ONLY"
           echo "DEBUG: Desglose -> Major: $major, Minor: $minor, Patch: $patch"
-          
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "DEBUG: Mensaje del último commit: $COMMIT_MSG"
-          
+
+          # En un merge, el título del PR es más fiable que el mensaje del merge commit
+          COMMIT_MSG="${PR_TITLE:-$(git log -1 --pretty=%B)}"
+          echo "DEBUG: Mensaje para decidir incremento: $COMMIT_MSG"
+
           if [[ "$COMMIT_MSG" == *"[major]"* ]]; then
             NEW_MAJOR=$((major + 1)); NEW_MINOR=0; NEW_PATCH=0
             echo "RESULTADO: Incremento MAJOR detectado."
@@ -59,20 +72,20 @@ jobs:
             NEW_MAJOR=$major; NEW_MINOR=$minor; NEW_PATCH=$((patch + 1))
             echo "RESULTADO: Incremento PATCH detectado por defecto."
           fi
-          
+
           GIT_SEMVER="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
           echo "DEBUG: Próximo Tag SemVer: v$GIT_SEMVER"
           echo "DEBUG: Próximo ID Sinergia (Unix): $NEW_INT_VERSION"
 
           # Guardar outputs para pasos posteriores
-          echo "int_version=$NEW_INT_VERSION" >> $GITHUB_OUTPUT
-          echo "semver=v$GIT_SEMVER" >> $GITHUB_OUTPUT
+          echo "int_version=$NEW_INT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "semver=v$GIT_SEMVER" >> "$GITHUB_OUTPUT"
 
           # 3. ACTUALIZAR ARCHIVO
           sed -i "s/'version'\s*=>\s*'[^']*'/'version' => '$NEW_INT_VERSION'/g" manifest.php
           sed -i "s/'published_date'\s*=>\s*'[^']*'/'published_date' => '$NEW_DATE'/g" manifest.php
-          
-          # 4. PUSH SEGURO
+
+          # 4. COMMIT Y PUSH
           git add manifest.php
           git commit -m "chore: update manifest to $NEW_INT_VERSION [skip ci]" || echo "No changes to commit"
           git pull --rebase origin main
@@ -82,20 +95,21 @@ jobs:
       - name: Create Git Tag
         run: |
           TAG_NAME="${{ steps.bump_manifest.outputs.semver }}"
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "El tag $TAG_NAME ya existe. No se recrea."
+            exit 1
+          fi
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
 
       # 3. Empaquetar y Release
       - name: Create Zip
         id: package_step
         run: |
-          # Definimos el nombre del archivo usando el output del paso anterior
           ZIP_NAME="stic_ClubsSocials.zip"
           echo "Generando archivo: $ZIP_NAME"
-          # Crear el zip
           zip -r "$ZIP_NAME" . -x "*.git*" ".github*"
-          # Exportamos el nombre para que el paso de Release lo encuentre
-          echo "zip_file=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "zip_file=$ZIP_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
