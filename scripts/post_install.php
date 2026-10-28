@@ -150,6 +150,11 @@ function post_install() {
     // Las etiquetas nuevas se añaden al final de custom/include/language/<idioma>.lang.php
     // sin reescribir el archivo: así se conservan el resto de desplegables,
     // $app_strings, $mod_strings u otras personalizaciones que pueda contener.
+    //
+    // Las listas parciales ya no se copian a custom/Extension/application/Ext/Language:
+    // al compilarse, ese tipo de archivo sustituye la lista completa y elimina los
+    // valores creados desde Studio. Las traducciones viven ahora en scripts/data/language
+    // y solo se usan para completar las claves que falten.
     echo "<br><span style='color: #0000FF; font-weight: bold;'>[STIC] Procesando diccionarios multi-idioma para custom/include/language...</span><br>";
 
     global $sugar_config;
@@ -159,12 +164,132 @@ function post_install() {
 
     // Idioma por defecto de fallback en la extensión si no existe la traducción específica
     $defaultExtensionLang = 'en_us';
-    $fallbackExtensionFile = "custom/Extension/application/Ext/Language/{$defaultExtensionLang}.add_relationship_type.php";
+    $extensionLanguageDir = __DIR__ . '/data/language';
+
+    require_once('ModuleInstall/ModuleInstaller.php');
+    $mi = new ModuleInstaller();
+
+    // 2. Eliminar las listas parciales que versiones anteriores del paquete copiaban
+    // a custom/Extension/application/Ext/Language. Si se dejan, al recompilar vuelven
+    // a sustituir la lista completa y se pierden los valores de Studio.
+    $legacyLanguageFiles = glob('custom/Extension/application/Ext/Language/*.add_relationship_type.php');
+    if (!is_array($legacyLanguageFiles)) {
+        $legacyLanguageFiles = [];
+    }
+    foreach ($legacyLanguageFiles as $legacyLanguageFile) {
+        if (is_file($legacyLanguageFile) && @unlink($legacyLanguageFile)) {
+            echo " - Lista parcial heredada eliminada: {$legacyLanguageFile}<br>";
+        } else {
+            echo "<span style='color: red;'>No se pudo eliminar la lista parcial heredada {$legacyLanguageFile}. Revisa permisos.</span><br>";
+        }
+    }
+
+    // 3. Recompilar las extensiones de idioma para que los .lang.ext.php dejen de
+    // contener las claves de las listas parciales eliminadas.
+    $mi->rebuild_languages($enabledLanguages);
+
+    // 4. Invalidar las listas de idioma en caché antes de consultar el estado real.
+    foreach (array_keys($enabledLanguages) as $langKey) {
+        sugar_cache_clear('app_list_strings.' . $langKey);
+    }
+
+    // Escribir el archivo de idioma de forma atómica y con copia de seguridad.
+    $writeLanguageFile = function ($targetLangFile, $content) {
+        $fileExists = file_exists($targetLangFile);
+        $backupFile = null;
+
+        if ($fileExists) {
+            $backupFile = $targetLangFile . '.bak-' . date('Ymd-His');
+            if (file_exists($backupFile)) {
+                $backupFile .= '-' . substr(md5(uniqid('', true)), 0, 8);
+            }
+            if (!@copy($targetLangFile, $backupFile)) {
+                return [
+                    'ok' => false,
+                    'message' => "No se pudo crear la copia de seguridad {$backupFile}.",
+                ];
+            }
+        }
+
+        $targetDir = dirname($targetLangFile);
+        $tmpFile = @tempnam($targetDir, basename($targetLangFile) . '.tmp-');
+        if ($tmpFile === false || realpath(dirname($tmpFile)) !== realpath($targetDir)) {
+            if ($tmpFile !== false) {
+                @unlink($tmpFile);
+            }
+            return [
+                'ok' => false,
+                'message' => "No se pudo crear un archivo temporal en {$targetDir}.",
+            ];
+        }
+
+        if (file_put_contents($tmpFile, $content, LOCK_EX) === false) {
+            @unlink($tmpFile);
+            return [
+                'ok' => false,
+                'message' => "No se pudo escribir el archivo temporal {$tmpFile}.",
+            ];
+        }
+
+        if ($fileExists) {
+            $permissions = fileperms($targetLangFile);
+            if ($permissions !== false) {
+                @chmod($tmpFile, $permissions & 0777);
+            }
+            if (function_exists('fileowner')) {
+                $owner = fileowner($targetLangFile);
+                if ($owner !== false && function_exists('chown')) {
+                    @chown($tmpFile, $owner);
+                }
+            }
+            if (function_exists('filegroup')) {
+                $group = filegroup($targetLangFile);
+                if ($group !== false && function_exists('chgrp')) {
+                    @chgrp($tmpFile, $group);
+                }
+            }
+        } else {
+            // Si el archivo es nuevo, heredar propietario y grupo del directorio
+            // para que el usuario del servidor web pueda seguir escribiéndolo.
+            if (function_exists('fileowner')) {
+                $owner = fileowner($targetDir);
+                if ($owner !== false && function_exists('chown')) {
+                    @chown($tmpFile, $owner);
+                }
+            }
+            if (function_exists('filegroup')) {
+                $group = filegroup($targetDir);
+                if ($group !== false && function_exists('chgrp')) {
+                    @chgrp($tmpFile, $group);
+                }
+            }
+            @chmod($tmpFile, 0644);
+        }
+
+        if (!@rename($tmpFile, $targetLangFile)) {
+            @unlink($tmpFile);
+            return [
+                'ok' => false,
+                'message' => "No se pudo reemplazar {$targetLangFile} de forma atómica.",
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'backup' => $backupFile,
+        ];
+    };
+
+    // 5. Calcular primero todas las claves que faltan y escribir después. Así una
+    // etiqueta añadida al idioma por defecto no se interpreta como existente en
+    // los demás idiomas durante esta misma ejecución.
+    $languagePlans = [];
 
     foreach ($enabledLanguages as $langKey => $langLabel) {
         echo "<br><b>Procesando idioma [{$langKey}]...</b> ";
 
-        $extensionFile = "custom/Extension/application/Ext/Language/{$langKey}.add_relationship_type.php";
+        $extensionFile = "{$extensionLanguageDir}/{$langKey}.add_relationship_type.php";
+        $fallbackExtensionFile = "{$extensionLanguageDir}/{$defaultExtensionLang}.add_relationship_type.php";
         $targetLangFile = "custom/include/language/{$langKey}.lang.php";
 
         // Determinamos qué archivo de la extensión vamos a usar (específico o fallback)
@@ -185,29 +310,37 @@ function post_install() {
         $app_list_strings = [];
         include $fileToLoad;
         $extensionStrings = $app_list_strings;
+        unset($app_list_strings);
 
         if (empty($extensionStrings) || !is_array($extensionStrings)) {
             echo "<span style='color: orange;'>El archivo '{$fileToLoad}' no contiene variables válidas.</span>";
             continue;
         }
 
-        // Cargar las etiquetas ya existentes en el archivo custom del idioma,
-        // contemplando tanto $app_list_strings como $GLOBALS['app_list_strings'].
-        $existingStrings = [];
-        if (file_exists($targetLangFile)) {
-            $app_list_strings = [];
-            $previousGlobalAppListStrings = isset($GLOBALS['app_list_strings']) ? $GLOBALS['app_list_strings'] : null;
+        // Lista efectiva en tiempo de ejecución: incluye el núcleo, las extensiones
+        // compiladas y custom/include/language, es decir, también lo creado en Studio.
+        $effectiveStrings = return_app_list_strings_language($langKey);
+        if (!is_array($effectiveStrings)) {
+            $effectiveStrings = [];
+        }
 
+        // Los archivos creados por Studio pueden usar $GLOBALS['app_list_strings']
+        // en lugar de $app_list_strings. Se cargan también para no duplicar claves
+        // que ya existan con una etiqueta personalizada.
+        if (file_exists($targetLangFile)) {
+            $previousGlobalAppListStrings = isset($GLOBALS['app_list_strings']) ? $GLOBALS['app_list_strings'] : null;
+            $app_list_strings = [];
             include $targetLangFile;
 
+            $customStrings = [];
             if (isset($app_list_strings) && is_array($app_list_strings)) {
-                $existingStrings = $app_list_strings;
+                $customStrings = $app_list_strings;
             }
             if (isset($GLOBALS['app_list_strings']) && is_array($GLOBALS['app_list_strings'])) {
-                $existingStrings = array_replace_recursive($GLOBALS['app_list_strings'], $existingStrings);
+                $customStrings = array_replace_recursive($GLOBALS['app_list_strings'], $customStrings);
             }
+            $effectiveStrings = array_replace_recursive($effectiveStrings, $customStrings);
 
-            // Restaurar el valor global para no alterar el resto de la instalación
             if ($previousGlobalAppListStrings === null) {
                 unset($GLOBALS['app_list_strings']);
             } else {
@@ -222,7 +355,10 @@ function post_install() {
                 continue;
             }
             foreach ($listValues as $key => $label) {
-                if (!isset($existingStrings[$listName][$key])) {
+                $alreadyExists = isset($effectiveStrings[$listName])
+                    && is_array($effectiveStrings[$listName])
+                    && array_key_exists($key, $effectiveStrings[$listName]);
+                if (!$alreadyExists) {
                     $newStrings[$listName][$key] = $label;
                 }
             }
@@ -233,46 +369,59 @@ function post_install() {
             continue;
         }
 
-        // Generar solo las asignaciones nuevas, con nombres y claves escapados
+        // Generar solo las asignaciones nuevas. Se escriben en ambos formatos para
+        // que funcionen tanto si el archivo se carga en ámbito global como dentro
+        // de return_app_list_strings_language().
         $newContent = '';
         foreach ($newStrings as $listName => $listValues) {
             foreach ($listValues as $key => $label) {
+                $newContent .= '$GLOBALS[\'app_list_strings\'][' . var_export($listName, true) . '][' . var_export($key, true) . '] = ' . var_export($label, true) . ";\n";
                 $newContent .= '$app_list_strings[' . var_export($listName, true) . '][' . var_export($key, true) . '] = ' . var_export($label, true) . ";\n";
             }
         }
+
+        $languagePlans[] = [
+            'langKey' => $langKey,
+            'targetLangFile' => $targetLangFile,
+            'newContent' => $newContent,
+        ];
+    }
+
+    foreach ($languagePlans as $plan) {
+        $targetLangFile = $plan['targetLangFile'];
+        $newContent = $plan['newContent'];
 
         // Asegurar directorio
         if (!is_dir('custom/include/language')) {
             mkdir('custom/include/language', 0755, true);
         }
 
-        if (!file_exists($targetLangFile)) {
-            // Si no existe el archivo custom, crearlo solo con las etiquetas nuevas
-            $fileContent = "<?php\n// Actualizado automáticamente por el módulo STIC ({$langKey}) - " . date('Y-m-d H:i:s') . "\n" . $newContent;
-            $written = file_put_contents($targetLangFile, $fileContent);
-        } else {
-            // Si ya existe, añadir las nuevas asignaciones sin reescribir su contenido
+        $fileExists = file_exists($targetLangFile);
+        if ($fileExists) {
             $existingContent = file_get_contents($targetLangFile);
             if ($existingContent === false) {
-                echo "<span style='color: red;'>No se pudo leer {$targetLangFile}.</span>";
+                echo "<br><span style='color: red;'>No se pudo leer {$targetLangFile}.</span>";
                 continue;
             }
 
             $appendContent = "\n// STIC Clubs Sociales: nuevas etiquetas - " . date('Y-m-d H:i:s') . "\n" . $newContent;
             $closePosition = strrpos($existingContent, '?>');
             if ($closePosition !== false) {
-                $existingContent = substr($existingContent, 0, $closePosition) . $appendContent . substr($existingContent, $closePosition);
+                $fileContent = substr($existingContent, 0, $closePosition) . $appendContent . substr($existingContent, $closePosition);
             } else {
-                $existingContent .= $appendContent;
+                $fileContent = $existingContent . $appendContent;
             }
-
-            $written = file_put_contents($targetLangFile, $existingContent);
+        } else {
+            $fileContent = "<?php\n// Actualizado automáticamente por el módulo STIC ({$plan['langKey']}) - " . date('Y-m-d H:i:s') . "\n" . $newContent;
         }
 
-        if ($written !== false) {
-            echo "<span style='color: green;'>¡Completado!</span>";
+        $writeResult = $writeLanguageFile($targetLangFile, $fileContent);
+        if ($writeResult['ok']) {
+            $backupMessage = !empty($writeResult['backup']) ? " Copia de seguridad: {$writeResult['backup']}." : '';
+            echo "<br><span style='color: green;'>¡Completado!{$backupMessage}</span>";
+            sugar_cache_clear('app_list_strings.' . $plan['langKey']);
         } else {
-            echo "<span style='color: red;'>Error al escribir {$targetLangFile}. Revisa permisos.</span>";
+            echo "<br><span style='color: red;'>Error al escribir {$targetLangFile}: {$writeResult['message']}</span>";
         }
     }
     echo "<br>";
@@ -282,9 +431,7 @@ function post_install() {
 
     echo "<p>Reconstruyendo etiquetas de idioma...</p>";
 
-    // 1. Reconstruir las extensiones de lenguaje para que el CRM "vea" tus nuevos archivos
-    require_once('ModuleInstall/ModuleInstaller.php');
-    $mi = new ModuleInstaller();
+    // 1. Reconstruir las extensiones para que el CRM "vea" los nuevos archivos
     $mi->rebuild_extensions(); // Esto busca nuevos archivos en Extension/
     
     // 2. Limpiar la caché específica de idiomas

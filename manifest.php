@@ -16,10 +16,21 @@ $manifest = [
 
 $installdefs = [
     'id' => 'stic_clubs_sociales_2024',
+    // Copia explícita de las carpetas del paquete. No se copia todo custom/
+    // para no sobrescribir custom/include/language, donde Studio guarda los
+    // desplegables personalizados de cada instalación.
     'copy' => [
         [
-            'from' => '<basepath>/custom/',
-            'to' => 'custom/',
+            'from' => '<basepath>/custom/Extension/',
+            'to' => 'custom/Extension/',
+        ],
+        [
+            'from' => '<basepath>/custom/metadata/',
+            'to' => 'custom/metadata/',
+        ],
+        [
+            'from' => '<basepath>/custom/modules/',
+            'to' => 'custom/modules/',
         ],
     ],
     'scripts' => [
