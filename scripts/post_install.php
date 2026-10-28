@@ -3,6 +3,11 @@ if (!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 
 function post_install() {
 
+    // La reparación dirigida de campos personalizados puede tardar en instancias
+    // grandes. Evitamos que PHP aborte el proceso si el proxy cierra la conexión.
+    set_time_limit(0);
+    ignore_user_abort(true);
+
     echo "<br><b>[STIC] Instalando en la ruta raíz del servidor:</b> " . __DIR__ . "<br>";
     echo "<br><span style='color: #0000FF; font-weight: bold;'>[STIC] Iniciando carga de nuevos informes...</span><br>";
 
@@ -426,37 +431,16 @@ function post_install() {
     }
     echo "<br>";
 
-    // Forzar reparación y reconstrucción rápida.
-    echo "<p>Realizando un <b>Reparar y Reconstruir Rápido</b> para aplicar los cambios visuales y de idiomas.</p><br>";
+    // ModuleInstaller::install() ya ejecuta rebuild_all() y repairAndClearAll()
+    // antes de incluir este post_install. Repetir aquí la reparación completa
+    // vuelve a lanzar repairDatabase()/ALTER TABLE sobre Contacts y los módulos
+    // del paquete y, en instancias grandes, agota el timeout del proxy.
+    //
+    // Solo reparamos los campos personalizados, que repairDatabase() omite porque
+    // tienen source != 'db'. Las listas de idioma ya se han actualizado en el bloque
+    // anterior y las extensiones ya las reconstruyó ModuleInstaller.
+    echo "<p>Reparando campos personalizados de los módulos del paquete...</p>";
 
-    echo "<p>Reconstruyendo etiquetas de idioma...</p>";
-
-    // 1. Reconstruir las extensiones para que el CRM "vea" los nuevos archivos
-    $mi->rebuild_extensions(); // Esto busca nuevos archivos en Extension/
-    
-    // 2. Limpiar la caché específica de idiomas
-    if(file_exists('cache/jsLanguage')) {
-        rmdir_recursive('cache/jsLanguage'); 
-    }
-    
-    // 3. Ejecutar la reparación pero enfocada en lenguajes y vardefs
-    require_once('modules/Administration/QuickRepairAndRebuild.php');
-    $repair = new RepairAndClear();
-    $repair->repairAndClearAll(
-        array('clearVardefs', 'clearLanguageCache', 'clearTpls'), 
-        array('Contacts', 'stic_Events', 'stic_Sessions', 'stic_Contacts_Relationships'), 
-        true, // auto-execute SQL
-        false // no mostrar salida HTML pesada
-    );
-
-    // repairAndClearAll() con una lista de módulos ejecuta repairDatabaseSelectModules(),
-    // que solo llama a DBManager::repairTable(). repairTableParams() omite los campos con
-    // source != 'db', por lo que las columnas _cstm de los campos definidos únicamente en
-    // vardefs (source = 'custom_fields') nunca se creaban. Sin esas columnas, usar el campo
-    // en una vista de lista o en un subpanel provoca errores SQL ("Unknown column") y la
-    // vista aparece vacía o muestra el error genérico de base de datos.
-    // Reparamos explícitamente los campos personalizados de los módulos del paquete para
-    // que las columnas que falten se creen a partir de los vardefs.
     require_once('modules/DynamicFields/DynamicField.php');
     $customFieldModules = array('stic_Events', 'stic_Sessions', 'stic_Contacts_Relationships', 'Contacts');
     foreach ($customFieldModules as $customFieldModule) {
@@ -469,13 +453,5 @@ function post_install() {
         $dynamicField->repairCustomFields(true);
     }
 
-    // echo "<p>Limpiando caché de extensiones...</p>";
-    // require_once('modules/Administration/QuickRepairAndRebuild.php');
-    // $repair = new RepairAndClear();
-    // $module_list = array('Contacts', 'stic_Events'); // Los módulos que tocas
-
-    // // Solo limpiamos cachés, NO ejecutamos el SQL automáticamente aquí para evitar el crash
-    // $repair->repairAndClearAll(array('clearVardefs', 'clearMetadataCache'), $module_list, true, false);
-
-    echo "<h3>Configuración finalizada. Por favor, revisa si hay cambios pendientes en Reparación Rápida.</h3>";
+    echo "<h3>Configuración finalizada.</h3>";
 }
