@@ -171,9 +171,6 @@ function post_install() {
     $defaultExtensionLang = 'en_us';
     $extensionLanguageDir = __DIR__ . '/data/language';
 
-    require_once('ModuleInstall/ModuleInstaller.php');
-    $mi = new ModuleInstaller();
-
     // 2. Eliminar las listas parciales que versiones anteriores del paquete copiaban
     // a custom/Extension/application/Ext/Language. Si se dejan, al recompilar vuelven
     // a sustituir la lista completa y se pierden los valores de Studio.
@@ -181,17 +178,34 @@ function post_install() {
     if (!is_array($legacyLanguageFiles)) {
         $legacyLanguageFiles = [];
     }
+
+    $legacyLanguages = [];
     foreach ($legacyLanguageFiles as $legacyLanguageFile) {
         if (is_file($legacyLanguageFile) && @unlink($legacyLanguageFile)) {
             echo " - Lista parcial heredada eliminada: {$legacyLanguageFile}<br>";
+            $legacyLanguage = basename($legacyLanguageFile, '.add_relationship_type.php');
+            if (isset($enabledLanguages[$legacyLanguage])) {
+                $legacyLanguages[$legacyLanguage] = $enabledLanguages[$legacyLanguage];
+            }
         } else {
             echo "<span style='color: red;'>No se pudo eliminar la lista parcial heredada {$legacyLanguageFile}. Revisa permisos.</span><br>";
         }
     }
 
-    // 3. Recompilar las extensiones de idioma para que los .lang.ext.php dejen de
-    // contener las claves de las listas parciales eliminadas.
-    $mi->rebuild_languages($enabledLanguages);
+    // 3. Recompilar las extensiones de idioma de aplicación solo si se han eliminado
+    // listas parciales heredadas. En instalaciones nuevas no hay nada que recompilar.
+    //
+    // Se limita el instalador a los ficheros de aplicación (modules = []) porque el
+    // cambio solo afecta a custom/application/Ext/Language. rebuild_languages() sin
+    // esa limitación recorre todos los módulos de la instancia y, en servidores
+    // grandes, es una de las fases más lentas del post_install.
+    if (!empty($legacyLanguages)) {
+        require_once('ModuleInstall/ModuleInstaller.php');
+        $mi = new ModuleInstaller();
+        $mi->silent = true;
+        $mi->modules = [];
+        $mi->rebuild_languages($legacyLanguages);
+    }
 
     // 4. Invalidar las listas de idioma en caché antes de consultar el estado real.
     foreach (array_keys($enabledLanguages) as $langKey) {
@@ -433,25 +447,124 @@ function post_install() {
 
     // ModuleInstaller::install() ya ejecuta rebuild_all() y repairAndClearAll()
     // antes de incluir este post_install. Repetir aquí la reparación completa
-    // vuelve a lanzar repairDatabase()/ALTER TABLE sobre Contacts y los módulos
-    // del paquete y, en instancias grandes, agota el timeout del proxy.
+    // vuelve a lanzar repairDatabase()/ALTER TABLE sobre toda la instancia y, en
+    // servidores grandes, agota el timeout del proxy.
     //
-    // Solo reparamos los campos personalizados, que repairDatabase() omite porque
-    // tienen source != 'db'. Las listas de idioma ya se han actualizado en el bloque
-    // anterior y las extensiones ya las reconstruyó ModuleInstaller.
-    echo "<p>Reparando campos personalizados de los módulos del paquete...</p>";
+    // repairDatabase() omite los campos con source != 'db', por lo que las columnas
+    // de los campos definidos solo en vardefs (source = custom_fields) no se crean.
+    // Antes se intentaba con DynamicField::repairCustomFields(), pero dependía de
+    // que el bean tuviera ya cargados los vardefs nuevos en memoria; durante la
+    // instalación la caché podía seguir teniendo la versión anterior y las columnas
+    // no se creaban (había que ejecutar después "Reparar y reconstruir" a mano).
+    //
+    // Ahora leemos directamente los vardefs que trae el paquete y creamos solo las
+    // columnas que falten. Es determinista, no depende de la caché y es muy rápido.
+    echo "<p>Creando las columnas de base de datos que falten para los campos del paquete...</p>";
+    sticCsCreateMissingCustomFieldColumns();
 
-    require_once('modules/DynamicFields/DynamicField.php');
-    $customFieldModules = array('stic_Events', 'stic_Sessions', 'stic_Contacts_Relationships', 'Contacts');
-    foreach ($customFieldModules as $customFieldModule) {
-        $moduleBean = BeanFactory::getBean($customFieldModule);
-        if (empty($moduleBean)) {
-            continue;
-        }
-        $dynamicField = new DynamicField($customFieldModule);
-        $dynamicField->bean = $moduleBean;
-        $dynamicField->repairCustomFields(true);
-    }
+    // Limpieza dirigida de cachés de los módulos del paquete. ModuleInstaller no
+    // repara estos módulos (ver scripts/post_execute.php: la reparación se limita a
+    // un módulo inocuo para no recorrer toda la instancia), así que la hacemos aquí
+    // después de escribir las vistas y las etiquetas de idioma.
+    require_once('modules/Administration/QuickRepairAndRebuild.php');
+    $cacheRepair = new RepairAndClear();
+    // RepairAndClear espera nombres de bean (Contact, no Contacts) para poder
+    // resolver el directorio plural del módulo.
+    $cacheRepair->module_list = array(
+        'Contact',
+        'stic_Events',
+        'stic_Sessions',
+        'stic_Contacts_Relationships',
+    );
+    $cacheRepair->show_output = false;
+    $cacheRepair->clearVardefs();
+    $cacheRepair->clearTpls();
+    $cacheRepair->clearJsFiles();
+    $cacheRepair->clearJsLangFiles();
+    $cacheRepair->clearLanguageCache();
 
     echo "<h3>Configuración finalizada.</h3>";
+}
+
+/**
+ * Crea en base de datos las columnas de los campos que el paquete define en sus
+ * vardefs con source = custom_fields.
+ *
+ * No usa los beans cargados en memoria (cuya caché de vardefs puede ser anterior
+ * a la copia del paquete). Lee directamente los ficheros de vardefs incluidos en
+ * el ZIP y añade únicamente las columnas que no existan.
+ */
+function sticCsCreateMissingCustomFieldColumns() {
+    require_once('modules/DynamicFields/DynamicField.php');
+    require_once('modules/DynamicFields/FieldCases.php');
+
+    if (empty($GLOBALS['beanList']) || empty($GLOBALS['beanFiles'])) {
+        include('include/modules.php');
+    }
+
+    $packageRoot = dirname(__DIR__);
+    $packageVardefs = array(
+        'Contacts' => 'custom/Extension/modules/Contacts/Ext/Vardefs/cs_custom_fields.php',
+        'stic_Events' => 'custom/Extension/modules/stic_Events/Ext/Vardefs/assistents_by_status.php',
+        'stic_Sessions' => 'custom/Extension/modules/stic_Sessions/Ext/Vardefs/assistents_by_status.php',
+        'stic_Contacts_Relationships' => 'custom/Extension/modules/stic_Contacts_Relationships/Ext/Vardefs/waitingList.php',
+    );
+
+    foreach ($packageVardefs as $customFieldModule => $relativeVardefFile) {
+        $vardefFile = $packageRoot . '/' . $relativeVardefFile;
+        if (!is_file($vardefFile)) {
+            echo "<span style='color: red;'>No se encontró el vardef {$vardefFile}.</span><br>";
+            continue;
+        }
+
+        // Cargar únicamente los campos que define el paquete, no los de la instancia.
+        $dictionary = array();
+        include $vardefFile;
+
+        $customFields = array();
+        foreach ($dictionary as $dictionaryEntry) {
+            if (empty($dictionaryEntry['fields']) || !is_array($dictionaryEntry['fields'])) {
+                continue;
+            }
+            foreach ($dictionaryEntry['fields'] as $fieldName => $fieldDef) {
+                if (isset($fieldDef['source']) && $fieldDef['source'] === 'custom_fields') {
+                    $customFields[$fieldName] = $fieldDef;
+                }
+            }
+        }
+
+        if (empty($customFields)) {
+            continue;
+        }
+
+        $beanClass = isset($GLOBALS['beanList'][$customFieldModule]) ? $GLOBALS['beanList'][$customFieldModule] : '';
+        if (empty($beanClass) || empty($GLOBALS['beanFiles'][$beanClass]) || !is_file($GLOBALS['beanFiles'][$beanClass])) {
+            echo "<span style='color: red;'>No se pudo cargar el bean de {$customFieldModule}.</span><br>";
+            continue;
+        }
+
+        require_once($GLOBALS['beanFiles'][$beanClass]);
+        $moduleBean = new $beanClass();
+
+        $dynamicField = new DynamicField($customFieldModule);
+        $dynamicField->bean = $moduleBean;
+        $dynamicField->createCustomTable(true);
+
+        $existingColumns = $GLOBALS['db']->get_columns($moduleBean->table_name . '_cstm');
+        if (!is_array($existingColumns)) {
+            $existingColumns = array();
+        }
+
+        foreach ($customFields as $fieldName => $fieldDef) {
+            if (isset($existingColumns[strtolower($fieldName)])) {
+                continue;
+            }
+            try {
+                $dynamicField->add_existing_custom_field($fieldDef, true);
+                echo " - {$customFieldModule}: columna <b>{$fieldName}</b> creada en {$moduleBean->table_name}_cstm<br>";
+            } catch (Throwable $e) {
+                echo "<span style='color: red;'> - {$customFieldModule}: no se pudo crear la columna {$fieldName}: " . $e->getMessage() . "</span><br>";
+            }
+        }
+    }
 }
