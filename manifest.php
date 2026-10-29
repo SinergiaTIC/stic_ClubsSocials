@@ -6,10 +6,10 @@ $manifest = [
     'license' => 'LICENSE.txt',
     'description' => 'Añade campos, informes y valores a desplegables para la funcionalidad de Club Social',
     'is_uninstallable' => true,
-    'published_date' => '2026-10-28 12:57:49',
+    'published_date' => '2026-10-29 08:06:57',
     'name' => 'STIC Clubs sociales',
     'type' => 'module',
-    'version' => '1793192269',
+    'version' => '1793257617',
     'key' => 'stic',    
     'remove_tables' => 'prompt',
 ];
@@ -35,6 +35,12 @@ $installdefs = [
     ],
     'scripts' => [
         'post_install' => '<basepath>/scripts/post_install.php',
+    ],
+    // Se ejecuta al final de las tareas de ModuleInstaller, antes de rebuild_all()
+    // y repairAndClearAll(). Limita ambas fases a los módulos del paquete para no
+    // reparar toda la instancia en cada instalación.
+    'post_execute' => [
+        '<basepath>/scripts/post_execute.php',
     ],
     // Relación de auto-referencia Evento principal -> Subeventos. Al declararla en el
     // manifiesto, ModuleInstaller::install_relationships() crea la tabla de unión
